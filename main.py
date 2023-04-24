@@ -17,15 +17,15 @@ from calc_rli_xy_ss import (add_zeros,
                             add_zeros_2_channels,
                             big_cycle1,
                             big_cycle2)
-from gpu_rli_xy_ss import big_cycle1
+from gpu_rli_xy_ss import big_cycle1, big_cycle2
 
-time_prev= time.time()
-# общие переменные
+time_prev = time.time()
+# общие переменные-
 c = 3 * 10 ** 8
 df = 25 * 10 ** 6  # ширина спектра зондирующего сигнала *********
 Ks = 1  # коэффициент Найквиста для исходного сигнала
-Kss = 1  # коэффициент передискретизации *****
-T0 = 10 ** -4  # длительность импульса
+Kss = 4  # коэффициент передискретизации *****
+T0 = 10 ** -5  # длительность импульса
 Fs = Ks * df  # частота дискретизации
 T = 4 * T0  # длительность моделируемого участка
 N = int(T * Fs)  # число отчетов в пределах периода повторения
@@ -37,7 +37,7 @@ lamda = 0.03  # длина волны
 f0 = c / lamda  # несущая частота
 
 Tn = 1.0  # общее время наблюдения
-Tr = 0.25 * 10 ** -2  # период повторения ******
+Tr = 0.25 * 10 ** -3  # период повторения ******
 Q = int(Tn / Tr)  # число импульсов в пачке
 Tsint = 0.4  # время синтезирования
 
@@ -322,7 +322,7 @@ if FlagInter == 0:
                Uout01ss, Fs, WinSampl, Zxy1, lamda)
 if FlagInter == 1:
     Zxy2 = np.zeros((Nxsint, Nysint), complex)
-    Zxy1, Zxy2 = big_cycle2(Nxsint, Nysint, X1sint, Y1sint, dxsint, dysint, Xrls, Yrls, Zrls,
+    Zxy1, Zxy2 = big_cycle2(X1sint, Y1sint, dxsint, dysint, Xrls, Yrls, Zrls,
                Vxrls, Vyrls, Vzrls, Tsint, Tr, Vrls, L, c, t2, T0, Kss,
                Uout01ss, Fs, WinSampl, Zxy1, Zxy2, lamda, Uout02ss)
 
