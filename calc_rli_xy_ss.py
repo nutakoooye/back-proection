@@ -59,7 +59,7 @@ def big_cycle1(Nxsint, Nysint, X1sint, Y1sint, dxsint, dysint, Xrls, Yrls, Zrls,
                 # дробный номер отсчета, где находится сигнал, по быстрому времени
                 ndr = (2 * d / c - t2 + T0) * Kss * Fs
                 # целая и дробная часть индекса
-                n = math.floor(ndr) + 1
+                n = int(ndr) + 1
                 drob = ndr % 1
                 # линейная интерполяция отсчетов
                 ut = Uout01ss[n, q] * (1 - drob) + Uout01ss[
@@ -67,7 +67,7 @@ def big_cycle1(Nxsint, Nysint, X1sint, Y1sint, dxsint, dysint, Xrls, Yrls, Zrls,
 
                 # суммирование с учетом поворота фазы и взвешивания
                 sum1 = sum1 + ut * WinSampl[q - q1 + 1] * np.exp(
-                    -4j * math.pi / lamda * ar / 2 * ((q - q0) * Tr) ** 2)
+                    -4j * np.pi / lamda * ar / 2 * ((q - q0) * Tr) ** 2)
             Zxy1[nx, ny] = sum1
         print(nx, '/', Nxsint)
     return Zxy1
@@ -105,19 +105,19 @@ def big_cycle2(Nxsint, Nysint, X1sint, Y1sint, dxsint, dysint, Xrls, Yrls, Zrls,
                             (yt - (Yrls[0] + Vyrls * q * Tr)) ** 2 +
                             (zt - (Zrls[0] + Vzrls * q * Tr)) ** 2)
                 ndr = (2 * d / c - t2 + T0) * Kss * Fs  # дробный номер отсчета по быстрому времени
-                n = math.floor(ndr) + 1
+                n = int(ndr) + 1
                 drob = ndr % 1
                 ut = Uout01ss[n, q] * (1 - drob) + Uout01ss[n + 1, q] * drob
                 # суммируем с учетом сдвига РЛИ по скорости
                 sum1 = sum1 + ut * WinSampl[q - q1 + 1] * np.exp(
-                    -1j * 4 * math.pi / lamda * ar / 2 * (
+                    -1j * 4 * np.pi / lamda * ar / 2 * (
                                 (q - q0) * Tr) ** 2) * np.exp(
-                    1j * 2 * math.pi * Vr1 / lamda * (q - q0) * Tr)
+                    1j * 2 * np.pi * Vr1 / lamda * (q - q0) * Tr)
                 ut = Uout02ss[n, q] * (1 - drob) + Uout02ss[n + 1, q] * drob
                 sum2 = sum2 + ut * WinSampl[q - q1 + 1] * np.exp(
-                    -1j * 4 * math.pi / lamda * ar / 2 * (
+                    -1j * 4 * np.pi / lamda * ar / 2 * (
                                 (q - q0) * Tr) ** 2) * np.exp(
-                    1j * 2 * math.pi * Vr2 / lamda * (q - q0) * Tr)
+                    1j * 2 * np.pi * Vr2 / lamda * (q - q0) * Tr)
             Zxy1[nx, ny] = sum1
             Zxy2[nx, ny] = sum2
         print(nx, '/', Nxsint)
