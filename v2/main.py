@@ -80,7 +80,7 @@ with open('TS_and_RLI/ModelDate-14-May-2023 19.38.28.txt', 'r') as f:
     N = int(float(f.readline()))  # число отсчетов по быстрому времени
     Q = int(float(f.readline()))  # число периодов повторения
     Nrch = int(float(f.readline()))
-    Nrch = 2 # число приемных каналов
+    Nrch = 1 # число приемных каналов
     Lrch = float(f.readline())  # расстояние между фазовыми центрами приемных каналов
     Vrsa = float(f.readline())  # скорость РСА
     Tsint = float(f.readline())  # время синтезирования ?
