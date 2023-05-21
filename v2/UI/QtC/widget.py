@@ -1,6 +1,6 @@
 
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QPushButton, QDoubleSpinBox, QSpinBox,QLabel, QRadioButton, QFileDialog,QMainWindow
+from PySide6.QtWidgets import QApplication, QPushButton,QCheckBox,QGroupBox, QDoubleSpinBox, QSpinBox,QLabel, QRadioButton, QFileDialog,QMainWindow
 from PySide6.QtCore import Slot
 app = QApplication([])
 window = QMainWindow()
@@ -26,28 +26,55 @@ File_path = ''
 button_start = ui.findChild(QPushButton, "Start")
 button_uploadFile = ui.findChild(QPushButton, "upload")
 
+QTypeWinDn = ui.findChild(QGroupBox, 'TypeWinDn')
+QTypeWinDp = ui.findChild(QGroupBox, 'TypeWinDp')
+
 
 @Slot()
 def button_start_clicked():
     mode3 = ui.findChild(QRadioButton, 'Detailmode').isChecked()
+    selectedTypeWinDnArr = QTypeWinDn.findChildren(QRadioButton)
+    selectedTypeWinDpArr = QTypeWinDp.findChildren(QRadioButton)
+
+    #Default values
+    TypeWinDn = 1
+    TypeWinDp = 1
     RegimRsa = 2
+
+    #Ищем режим
     if mode3:
         RegimRsa = 1
-    print(ui.findChild(QRadioButton, 'Stripmap').isChecked())
+
+    # Ищем режим TypeWinDn
+    for i in range(len(selectedTypeWinDnArr)):
+        if selectedTypeWinDnArr[i].isChecked():
+            TypeWinDn = int(selectedTypeWinDnArr[i].objectName()[1:])
+
+    # Ищем режим TypeWinDp
+    for i in range(len(selectedTypeWinDpArr)):
+        if selectedTypeWinDpArr[i].isChecked():
+            TypeWinDp = int(selectedTypeWinDnArr[i].objectName()[1:])
+
+
+    isGPU = ui.findChild(QCheckBox, 'GPU').isChecked()
+
     returnedValues = {
-        'Kss': ui.findChild(QSpinBox, "Kss").text(),
-        'dxsint': ui.findChild(QDoubleSpinBox, "dxsint").text(),
-        'dysint': ui.findChild(QDoubleSpinBox, "dysint").text(),
-        'StepBright': ui.findChild(QDoubleSpinBox, "StepBright").text(),
-        'Nxsint': ui.findChild(QSpinBox, "Nxsint").text(),
-        'Nysint': ui.findChild(QSpinBox, "Nysint").text(),
-        'Tsint': ui.findChild(QDoubleSpinBox, "Tsint").text(),
-        'tauRli': ui.findChild(QDoubleSpinBox, "tauRli").text(),
+        'Kss': int(ui.findChild(QSpinBox, "Kss").text()),
+        'dxsint': float(ui.findChild(QDoubleSpinBox, "dxsint").text().replace(',', '.')),
+        'dysint': float(ui.findChild(QDoubleSpinBox, "dysint").text().replace(',', '.')),
+        'StepBright': float(ui.findChild(QDoubleSpinBox, "StepBright").text().replace(',', '.')),
+        'Nxsint': int(ui.findChild(QSpinBox, "Nxsint").text()),
+        'Nysint': int(ui.findChild(QSpinBox, "Nysint").text()),
+        'Tsint': float(ui.findChild(QDoubleSpinBox, "Tsint").text().replace(',', '.')),
+        'tauRli': float(ui.findChild(QDoubleSpinBox, "tauRli").text().replace(',', '.')),
         'RegimRsa': RegimRsa,
-        't_r_w': ui.findChild(QDoubleSpinBox, "t_r_w").text(), # мб не то :)
+        'TypeWinDp': TypeWinDp,
+        'TypeWinDn': TypeWinDn,
+        'isGPU': isGPU,
+        't_r_w': float(ui.findChild(QDoubleSpinBox, "t_r_w").text().replace(',', '.')), # мб не то :)
     }
     print('---Полученные значения от клиента---')
-    print(f"{returnedValues}")
+    print(returnedValues)
 
 
 def open_file():

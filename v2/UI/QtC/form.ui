@@ -19,6 +19,9 @@
   <property name="windowTitle">
    <string>Widget</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">qlineargradient:(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(191, 191, 191, 255), stop:1 rgba(255, 255, 255, 255))</string>
+  </property>
   <widget class="QWidget" name="horizontalLayoutWidget_4">
    <property name="geometry">
     <rect>
@@ -153,7 +156,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QGroupBox" name="groupBox">
+  <widget class="QGroupBox" name="TypeWinDn">
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -179,7 +182,7 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QRadioButton" name="radioButton_2">
+      <widget class="QRadioButton" name="r1">
        <property name="text">
         <string>нет</string>
        </property>
@@ -189,63 +192,63 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton">
+      <widget class="QRadioButton" name="r2">
        <property name="text">
         <string>косинус</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_3">
+      <widget class="QRadioButton" name="r3">
        <property name="text">
         <string>косинус квадрат</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_4">
+      <widget class="QRadioButton" name="r4">
        <property name="text">
         <string>Хемминга</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_5">
+      <widget class="QRadioButton" name="r5">
        <property name="text">
         <string>Хемминга (третья степень)</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_6">
+      <widget class="QRadioButton" name="r6">
        <property name="text">
         <string>Хемминга (четвертая степень)</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_7">
+      <widget class="QRadioButton" name="r7">
        <property name="text">
         <string>Кайзера-Бесселя, alfa=2.7</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_8">
+      <widget class="QRadioButton" name="r8">
        <property name="text">
         <string>Кайзера-Бесселя, alfa=3.1</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_9">
+      <widget class="QRadioButton" name="r9">
        <property name="text">
         <string>Кайзера-Бесселя, alfa=3.5</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_10">
+      <widget class="QRadioButton" name="r10">
        <property name="text">
         <string>Блекмана-Херриса</string>
        </property>
@@ -254,7 +257,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_2">
+  <widget class="QGroupBox" name="TypeWinDp">
    <property name="geometry">
     <rect>
      <x>390</x>
@@ -286,7 +289,7 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_5">
      <item>
-      <widget class="QRadioButton" name="radioButton_21">
+      <widget class="QRadioButton" name="p1">
        <property name="text">
         <string>нет</string>
        </property>
@@ -296,63 +299,63 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_22">
+      <widget class="QRadioButton" name="p2">
        <property name="text">
         <string>косинус</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_23">
+      <widget class="QRadioButton" name="p3">
        <property name="text">
         <string>косинус квадрат</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_24">
+      <widget class="QRadioButton" name="p4">
        <property name="text">
         <string>Хемминга</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_25">
+      <widget class="QRadioButton" name="p5">
        <property name="text">
         <string>Хемминга (третья степень)</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_26">
+      <widget class="QRadioButton" name="p6">
        <property name="text">
         <string>Хемминга (четвертая степень)</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_27">
+      <widget class="QRadioButton" name="p7">
        <property name="text">
         <string>Кайзера-Бесселя, alfa=2.7</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_28">
+      <widget class="QRadioButton" name="p8">
        <property name="text">
         <string>Кайзера-Бесселя, alfa=3.1</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_29">
+      <widget class="QRadioButton" name="p9">
        <property name="text">
         <string>Кайзера-Бесселя, alfa=3.5</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_30">
+      <widget class="QRadioButton" name="p10">
        <property name="text">
         <string>Блекмана-Херриса</string>
        </property>
@@ -579,6 +582,19 @@
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QCheckBox" name="GPU">
+   <property name="geometry">
+    <rect>
+     <x>820</x>
+     <y>450</y>
+     <width>271</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Аппаратное ускорение (GPU)</string>
+   </property>
   </widget>
  </widget>
  <resources/>
