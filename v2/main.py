@@ -7,7 +7,8 @@ from v2.functions import Win, ChirpSig
 from v1.utils import time_of_function
 from v2.route_mode import route_big_cycle1, route_big_cycle2
 from v2.detail_mode import detail_big_cycle1, detail_big_cycle2
-
+from v2.route_mode_gpu import gpu_route_big_cycle1, gpu_route_big_cycle2
+from v2.detail_mode_gpu import gpu_detail_big_cycle1, gpu_detail_big_cycle2
 # МАРШРУТНЫЙ РЕЖИМ: построение РЛИ в координатах (широта/долгота) при
 # увеличенной частоты дискретизации.
 # Вход: 
@@ -45,7 +46,7 @@ from v2.detail_mode import detail_big_cycle1, detail_big_cycle2
 # 10 - Блекмана-Херриса (-92 дБ)
 
 # вариант задания исходных данных через форму
-RegimRsa = 2  # режим радиолокационной съемки 1 - детальный, 2 - маршрутный
+RegimRsa = 1  # режим радиолокационной съемки 1 - детальный, 2 - маршрутный
 TypeWinDn = 1  # тип оконной функции при сжатии по наклонной дальности
 TypeWinDp = 1  # тип оконной функции при сжатии по поперечной дальности
 dxsint = 1  # дискретность зоны синтезирования по Ox
@@ -57,7 +58,7 @@ Tsint = 0.4  # время синтезирования
 StepBright = 1  # показатель степени при отображении
 FlagViewSignal = 1  # флаг отображения сигналов в ходе расчетов
 FlagWriteRli = 1
-
+GPUCalculationFlag = 0 # 1 - расчет на GPU, 0 - на CPU
 tauRli = 0.3  # задержка начала построения РЛИ ***
 NumRli = 1  # номер РЛИ в последовательности ***
 
@@ -80,7 +81,7 @@ with open('TS_and_RLI/ModelDate-14-May-2023 19.38.28.txt', 'r') as f:
     N = int(float(f.readline()))  # число отсчетов по быстрому времени
     Q = int(float(f.readline()))  # число периодов повторения
     Nrch = int(float(f.readline()))
-    Nrch = 2 # число приемных каналов
+    Nrch = 1 # число приемных каналов
     Lrch = float(f.readline())  # расстояние между фазовыми центрами приемных каналов
     Vrsa = float(f.readline())  # скорость РСА
     Tsint = float(f.readline())  # время синтезирования ?
@@ -213,15 +214,26 @@ for q in range(Nr + 1):
 
 if RegimRsa == 2:  # маршрутный режим
     # основной расчетный цикл ДЛЯ МАКСИМАЛЬНОГО РАСПАРАЛЛЕЛИВАНИЯ
-    if Nrch == 1:
-        Zxy1 = route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-                                Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-                                Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0)
-    if Nrch == 2:
-        Zxy1, Zxy2 = route_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
-                                      Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-                                      Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e,
-                                      T0)
+    if GPUCalculationFlag:
+        if Nrch == 1:
+            Zxy1 = gpu_route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
+                                    Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                                    Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0)
+        if Nrch == 2:
+            Zxy1, Zxy2 = gpu_route_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
+                                          Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                                          Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e,
+                                          T0)
+    else:
+        if Nrch == 1:
+            Zxy1 = route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
+                                    Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                                    Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0)
+        if Nrch == 2:
+            Zxy1, Zxy2 = route_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
+                                          Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                                          Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e,
+                                          T0)
 if RegimRsa == 1:  # детальный режим
     # подготовка исходных данных для расчета
     Tst = Tst0 + (qst - 1) * Tr  # момент начала
@@ -255,16 +267,27 @@ if RegimRsa == 1:  # детальный режим
     sumtt6 = np.sum(tt ** 6)
 
     # основной расчетный цикл ДЛЯ МАКСИМАЛЬНОГО РАСПАРАЛЛЕЛИВАНИЯ
-    if Nrch == 1:
-        Zxy1 = detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-                                 Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-                                 Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                 sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
-    if Nrch == 2:
-        Zxy1, Zxy2 = detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
-                                       Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-                                       Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                       sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+    if GPUCalculationFlag:
+        if Nrch == 1:
+            Zxy1 = gpu_detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
+                                     Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
+                                     Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
+                                     sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+        if Nrch == 2:
+            Zxy1, Zxy2 = gpu_detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
+                                           Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
+                                           Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,                                           sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+    else:
+        if Nrch == 1:
+            Zxy1 = detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
+                                     Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
+                                     Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
+                                     sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+        if Nrch == 2:
+            Zxy1, Zxy2 = detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
+                                           Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
+                                           Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
+                                           sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
 
 if FlagViewSignal == 1 and RegimRsa == 2:
     fig = plt.figure(figsize=(12.8, 9.6))
