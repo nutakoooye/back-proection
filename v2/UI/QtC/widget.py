@@ -86,8 +86,9 @@ def open_file():
     if file_path:
         pathUi = ui.findChild(QLabel, 'Path')
         pathUi.setText(file_path)
-        fileName = ui.findChild(QLabel, 'File_name')
-        fileName.setText(f"{file_path}".split("/")[-1])
+        fileNameLabel = ui.findChild(QLabel, 'File_name')
+
+        fileNameLabel.setText(str(file_path).split("/")[-1])
         File_path = f'{file_path}'
         print(f"Выбран файл: {file_path}")
 
