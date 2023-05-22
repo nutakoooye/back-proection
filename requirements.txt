@@ -1,3 +1,4 @@
 numba==0.56.4
 numpy==1.23.5
 matplotlib==3.7.1
+scipy==1.10.1

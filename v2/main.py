@@ -57,8 +57,8 @@ Kss = 4  # коэффициент передискретизации
 Tsint = 0.4  # время синтезирования
 StepBright = 1  # показатель степени при отображении
 FlagViewSignal = 1  # флаг отображения сигналов в ходе расчетов
-FlagWriteRli = 1
-GPUCalculationFlag = 0 # 1 - расчет на GPU, 0 - на CPU
+FlagWriteRli = 0
+GPUCalculationFlag = 1 # 1 - расчет на GPU, 0 - на CPU
 tauRli = 0.3  # задержка начала построения РЛИ ***
 NumRli = 1  # номер РЛИ в последовательности ***
 
@@ -91,7 +91,7 @@ with open('TS_and_RLI/ModelDate-14-May-2023 19.38.28.txt', 'r') as f:
     dugConsort = float(f.readline())  # дискретность данных в консорт-файле по углам
 
 # считывание координат РСА из консорт-файла размерностью Q*14
-XYZ_rsa_ts = data = np.genfromtxt('TS_and_RLI/Consort-14-May-2023 19.38.28.txt', dtype=float, delimiter='  ')
+XYZ_rsa_ts = np.genfromtxt('TS_and_RLI/Consort-14-May-2023 19.38.28.txt', dtype=float, delimiter='  ')
 # считывание траекторного сигнала из файла
 with open('TS_and_RLI/Yts1-14-May-2023 19.38.28.bin', 'rb') as file:
     Yts = np.fromfile(file, dtype=np.int16).reshape((Q, 2 * N)).T
@@ -114,7 +114,7 @@ Tz = 2 * np.pi / wz  # период вращения Земли - солнечн
 speedOfL = 3 * 10 ** 8  # скорость света
 e = 2.71828
 
-qst = int(tauRli / Tr) + 1  # ***
+qst = int(tauRli / Tr) + 1 # номер периода повторение с которого начинаем расчет для детального режима
 d_fi_sint = dysint / Rz  # дискретность по широте
 d_beta_sint = dxsint / Rz / np.cos(fizt0)  # дискретность по долготе
 
@@ -419,7 +419,6 @@ if FlagWriteRli == 1:
         fileID.write(Zxy.tobytes())
         fileID.close()
 
-del Zxy  # освобождение памяти
 print('РЛИ записаны в файл')
 t = np.datetime64('now')
 print(f'Завершение РЛИ xy {t}')
