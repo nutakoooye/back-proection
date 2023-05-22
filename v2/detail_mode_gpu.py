@@ -1,66 +1,8 @@
 import math
 import numpy as np
-import numba as nb
 from numba import cuda
 from v1.utils import time_of_function, time_of_function_compile
-
-@cuda.jit(device=True)
-def dot_matrix_cuda(A, B, result):
-    for i in range(A.shape[0]):
-        for j in range(B.shape[1]):
-            for k in range(A.shape[1]):
-                result[i, j] += A[i, k] * B[k, j]
-@cuda.jit(device=True)
-def inverse_matrix_cuda(matrix, inverse):
-    # Получение размера матрицы
-    n = 4
-
-    # Проверка, что матрица квадратная
-    if n != matrix.shape[1]:
-        raise ValueError("Матрица должна быть квадратной")
-
-    # Создание расширенной матрицы, добавляя единичную матрицу справа
-    augmented_matrix = cuda.local.array((4, 8), dtype=nb.float64)
-    for i in range(n):
-        for j in range(n):
-            augmented_matrix[i, j] = matrix[i, j]
-            augmented_matrix[i, j + n] = 1 if i == j else 0
-
-    # Прямой ход метода Гаусса
-    for i in range(n):
-        # Находим ведущий элемент
-        pivot = augmented_matrix[i, i]
-
-        # Делим текущую строку на ведущий элемент
-        for j in range(2*n):
-            augmented_matrix[i, j] /= pivot
-
-        # Обнуляем остальные элементы в столбце
-        for j in range(n):
-            if j != i:
-                factor = augmented_matrix[j, i]
-                for k in range(2*n):
-                    augmented_matrix[j, k] -= factor * augmented_matrix[i, k]
-
-    # Извлекаем обратную матрицу из расширенной матрицы
-    for i in range(n):
-        for j in range(n):
-            inverse[i, j] = augmented_matrix[i, j + n]
-
-    # Извлекаем обратную матрицу из расширенной матрицы
-    for i in range(n):
-        for j in range(n):
-            inverse[i, j] = augmented_matrix[i, j + n]
-
-@cuda.jit(device=True)
-def flip_and_transpose_cuda(pr, pr1):
-    rows, cols = pr.shape
-
-
-    # Копирование элементов в обратном порядке
-    for i in range(rows):
-        for j in range(cols):
-            pr1[j, i] = pr[rows - 1 - i, j]
+from v2.jit_functions import inverse_matrix_cuda4, dot_matrix_cuda, flip_and_transpose_cuda
 
 @cuda.jit
 def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
@@ -84,7 +26,6 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         # аппроксимируем суммарную дальность фазовый центр антенны на передачу -
         # земная точка - фазовый центр приемного канала на интервале
         # синтезирования полиномом третьей степени по пяти точкам
-        r_Rch_zt = cuda.local.array((1, 1600), dtype=np.float64)
         rzt = cuda.local.array((3, 1), dtype=np.float64)
         RR = cuda.local.array(5, dtype=np.float64)
         for k in range(5):
@@ -119,24 +60,16 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         B = cuda.local.array((4, 1), dtype=np.float64)
         B[0,0],B[1,0],B[2,0],B[3,0]=B0, B1, B2, B3
         A_inv = cuda.local.array((4,4), dtype=np.float64)
-        inverse_matrix_cuda(A, A_inv)
+        inverse_matrix_cuda4(A, A_inv)
         pr = cuda.local.array((4, 1), dtype=np.float64)
         dot_matrix_cuda(A_inv,B,pr)
         pr1=cuda.local.array((1,4),dtype=np.float64)
         flip_and_transpose_cuda(pr, pr1)
         # вычисляем все дальности на интервале наблюдения
-        for i in range(Inabl):
-            t1 = i * Tr
-            b = cuda.local.array((4, 1), dtype=np.float64)
-            b[0, 0] = t1 ** 3
-            b[1, 0] = t1 ** 2
-            b[2, 0] = t1
-            b[3, 0] = 1.0
-            r_Rch_zt[0, i] = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + \
-                             pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
+
 
         # дальность на траверсе
-        d0 = r_Rch_zt[0, 0]
+        d0 = pr[0, 0]
         # ar=Vrsa^2/d0  # радиальное ускорение для компенсации МД и МЧ
         # нескомпенсированные скорости для приемных каналов
         Vr1 = (Lrch / 2) / d0 * Vrsa
@@ -144,13 +77,22 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         sum1 = 0
         # дальность в момент начала синтезирования для первого канала
         for q in range(q1 - 1, q2):
-            d = r_Rch_zt[0, q - q1 + 1]
+            b = cuda.local.array((4, 1), dtype=np.float64)
+            i = q - q1 + 1
+            t1 = i * Tr
+            b[0, 0] = t1 ** 3
+            b[1, 0] = t1 ** 2
+            b[2, 0] = t1
+            b[3, 0] = 1.0
+            # r_Rch_zt[0, i] =
+            d = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + \
+                             pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
             # дробный номер отсчета по быстрому времени
             ndr = (d / speedOfL - t_r_w + T0) * Kss * Fs - 1
             n = int(ndr)
             drob = ndr % 1
             ut = Uout01ss[n, q] * (1 - drob) + Uout01ss[n + 1, q] * drob
-            fiq = 2 * math.pi / lamda * (r_Rch_zt[0, q - q1 + 1] - q1)
+            fiq = 2 * math.pi / lamda * (d - q1)
             # суммируем с учетом сдвига РЛИ по скорости
             sum1 = sum1 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq) * e ** (
                     1j * 2 * np.pi * Vr1 / lamda * (q - q1 + 1) * Tr)
