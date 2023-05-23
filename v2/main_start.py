@@ -2,34 +2,22 @@
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QPushButton,QCheckBox,QGroupBox, QDoubleSpinBox, QSpinBox,QLabel, QRadioButton, QFileDialog,QMainWindow
 from PySide6.QtCore import Slot
+from v2.calc_rli import calc_rli
+from v2.getFilesPath import getFilesPath
 app = QApplication([])
 window = QMainWindow()
-ui_file = "form.ui"
+ui_file = "UI/form.ui"
 loader = QUiLoader()
 ui = loader.load(ui_file)
 
-returnedValues = {
-    'Kss': 4,
-    'dxsint': 1.0,
-    'dysint': 1.0,
-    'StepBright': 1.0,
-    'Nxsint': 201,
-    'Nysint': 201,
-    'Tsint': 0.4,
-    'RegimRsa': 1,
-    'tauRli': 0.00,
-    't_r_w': 0.1, # мб не то :)
-}
-File_path = ''
-
-
+# Селекторы
 button_start = ui.findChild(QPushButton, "Start")
 button_uploadFile = ui.findChild(QPushButton, "upload")
 
 QTypeWinDn = ui.findChild(QGroupBox, 'TypeWinDn')
 QTypeWinDp = ui.findChild(QGroupBox, 'TypeWinDp')
 
-
+pathUi = ui.findChild(QLabel, 'Path')
 @Slot()
 def button_start_clicked():
     mode3 = ui.findChild(QRadioButton, 'Detailmode').isChecked()
@@ -40,7 +28,7 @@ def button_start_clicked():
     TypeWinDn = 1
     TypeWinDp = 1
     RegimRsa = 2
-
+    isGPU = ui.findChild(QCheckBox, 'GPU').isChecked()
     #Ищем режим
     if mode3:
         RegimRsa = 1
@@ -55,9 +43,8 @@ def button_start_clicked():
         if selectedTypeWinDpArr[i].isChecked():
             TypeWinDp = int(selectedTypeWinDnArr[i].objectName()[1:])
 
-
-    isGPU = ui.findChild(QCheckBox, 'GPU').isChecked()
-
+    # Ищем пути к файлам
+    ConsortPath, ModelDatePath, Yts1Path, Yts2Path = getFilesPath(str(pathUi.text()))
     returnedValues = {
         'Kss': int(ui.findChild(QSpinBox, "Kss").text()),
         'dxsint': float(ui.findChild(QDoubleSpinBox, "dxsint").text().replace(',', '.')),
@@ -71,32 +58,31 @@ def button_start_clicked():
         'TypeWinDp': TypeWinDp,
         'TypeWinDn': TypeWinDn,
         'isGPU': isGPU,
-        't_r_w': float(ui.findChild(QDoubleSpinBox, "t_r_w").text().replace(',', '.')), # мб не то :)
+        'FlagViewSignal':ui.findChild(QCheckBox, 'FlagViewSignal').isChecked(),
+        'FlagWriteRli': ui.findChild(QCheckBox, 'FlagWriteRli').isChecked(),
+        #'t_r_w': float(ui.findChild(QDoubleSpinBox, "t_r_w").text().replace(',', '.')),
+        'ConsortPath': ConsortPath,
+        'ModelDatePath': ModelDatePath,
+        'Yts1Path': Yts1Path,
+        'Yts2Path': Yts2Path
     }
-    print('---Полученные значения от клиента---')
-    print(returnedValues)
-
+    calc_rli(returnedValues)
 
 def open_file():
     file_dialog = QFileDialog()
     file_path, _ = file_dialog.getOpenFileName(window, "Выберите файл")
 
 
-
     if file_path:
-        pathUi = ui.findChild(QLabel, 'Path')
         pathUi.setText(file_path)
         fileNameLabel = ui.findChild(QLabel, 'File_name')
-
         fileNameLabel.setText(str(file_path).split("/")[-1])
-        File_path = f'{file_path}'
         print(f"Выбран файл: {file_path}")
 
 
 
 button_uploadFile.clicked.connect(open_file)
-# window.setCentralWidget(button)
-# window.show()
+
 button_start.clicked.connect(button_start_clicked)
 
 ui.show()
