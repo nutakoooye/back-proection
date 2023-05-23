@@ -4,6 +4,8 @@ import numpy as np
 
 @cuda.jit(device=True)
 def dot_matrix_cuda(A, B, result):
+    for t in range(result.shape[0]):
+        result[t, 0]=0.
     for i in range(A.shape[0]):
         for j in range(B.shape[1]):
             for k in range(A.shape[1]):

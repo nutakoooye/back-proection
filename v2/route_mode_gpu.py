@@ -442,9 +442,9 @@ def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
 def gpu_route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
                Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
-    threads_per_block = (1, 1)
-    blocks_per_grid_x = 1
-    blocks_per_grid_y = 1
+    threads_per_block = (16, 16)
+    blocks_per_grid_x = math.ceil(Zxy1.shape[0] / threads_per_block[0])
+    blocks_per_grid_y = math.ceil(Zxy1.shape[1] / threads_per_block[1])
     blocks_per_grid = (blocks_per_grid_x, blocks_per_grid_y)
     kernel_2d_array_1[blocks_per_grid, threads_per_block](
         Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,

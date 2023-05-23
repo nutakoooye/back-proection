@@ -9,6 +9,8 @@ from v2.route_mode import route_big_cycle1, route_big_cycle2
 from v2.detail_mode import detail_big_cycle1, detail_big_cycle2
 from v2.route_mode_gpu import gpu_route_big_cycle1, gpu_route_big_cycle2
 from v2.detail_mode_gpu import gpu_detail_big_cycle1, gpu_detail_big_cycle2
+from v2.cupy_functions import cuifft
+
 # МАРШРУТНЫЙ РЕЖИМ: построение РЛИ в координатах (широта/долгота) при
 # увеличенной частоты дискретизации.
 # Вход: 
@@ -46,18 +48,18 @@ from v2.detail_mode_gpu import gpu_detail_big_cycle1, gpu_detail_big_cycle2
 # 10 - Блекмана-Херриса (-92 дБ)
 
 # вариант задания исходных данных через форму
-RegimRsa = 2  # режим радиолокационной съемки 1 - детальный, 2 - маршрутный
+RegimRsa = 1  # режим радиолокационной съемки 1 - детальный, 2 - маршрутный
 TypeWinDn = 1  # тип оконной функции при сжатии по наклонной дальности
 TypeWinDp = 1  # тип оконной функции при сжатии по поперечной дальности
 dxsint = 1  # дискретность зоны синтезирования по Ox
 dysint = 1  # дискретность зоны синтезирования по Oy
 Nxsint = 200  # число точек по оси Ox (долготе)
 Nysint = 200  # число точек по оси Oy (широте)
-Kss = 1  # коэффициент передискретизации
+Kss = 4  # коэффициент передискретизации
 Tsint = 0.4  # время синтезирования
 StepBright = 1  # показатель степени при отображении
-FlagViewSignal = 0  # флаг отображения сигналов в ходе расчетов
-FlagWriteRli = 0
+FlagViewSignal = 1  # флаг отображения сигналов в ходе расчетов
+FlagWriteRli = 1
 GPUCalculationFlag = 0 # 1 - расчет на GPU, 0 - на CPU
 tauRli = 0.3  # задержка начала построения РЛИ ***
 NumRli = 1  # номер РЛИ в последовательности ***
@@ -158,7 +160,9 @@ def oversampling(N, Q, Kss, Y0X, Gh0ss):
 np.fft.ifft = time_of_function(np.fft.ifft)
 
 Goutss = oversampling(N, Q, Kss, Y01, Gh0ss)
-Uout01ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
+
+#Uout01ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
+Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
 
 if Nrch == 2:
     # второй канал
@@ -289,39 +293,7 @@ if RegimRsa == 1:  # детальный режим
                                            Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
                                            sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
 
-if FlagViewSignal == 1 and RegimRsa == 2:
-    fig = plt.figure(figsize=(12.8, 9.6))
-    ax = fig.add_subplot(111, projection='3d')
-
-    x = np.arange(0, Nxsint, 1)
-    y = np.arange(0, Nysint, 1)
-    X, Y = np.meshgrid(y, x)
-
-    surf = ax.plot_surface(X, Y, np.abs(Zxy1) ** 2, cmap='viridis')
-    ax.view_init(10, 30)
-    plt.xlabel('Oy')
-    plt.ylabel('Ox')
-    plt.title('РЛИ по первому каналу')
-
-    if Nrch == 2:
-        fig = plt.figure(figsize=(12.8, 9.6))
-        ax = fig.add_subplot(111, projection='3d')
-        surf = ax.plot_surface(X, Y, np.abs(Zxy1 - Zxy2) ** 2, cmap='viridis')
-        ax.view_init(10, 30)
-        plt.xlabel('Oy')
-        plt.ylabel('Ox')
-        plt.title('разностное РЛИ')
-
-        fig = plt.figure(figsize=(12.8, 9.6))
-        ax = fig.add_subplot(111, projection='3d')
-        surf = ax.plot_surface(X, Y, np.abs(Zxy2) ** 2, cmap='viridis')
-        ax.view_init(10, 30)
-        plt.xlabel('Oy')
-        plt.ylabel('Ox')
-        plt.title('РЛИ по второму каналу')
-    plt.show()
-
-if FlagViewSignal == 1 and RegimRsa == 1:
+if FlagViewSignal == 1:
     # Трехмерное РЛИ-1
     fig = plt.figure(figsize=(12.8, 9.6))
     ax = fig.add_subplot(111, projection='3d')

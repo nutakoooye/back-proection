@@ -122,7 +122,6 @@ def route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             # аппроксимируем суммарную дальность фазовый центр антенны на передачу -
             # земная точка - фазовый центр приемной подрешетки на интервале наблюдения
             # полиномом третьей степени по пяти точкам
-            r_Rch_zt = np.zeros((1, Inabl))
             qq = np.zeros(5, dtype=np.int32)
             tt = np.empty(5)
             qq[0] = Q_cons_0 - 1
@@ -171,14 +170,11 @@ def route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             pr1 = np.flip(pr.T)
 
             # вычисляем все дальности на интервале наблюдения
-            for i in range(Inabl):
-                t1 = i * Tr
-                b = np.array([[t1 ** 3], [t1 ** 2], [t1], [1.0]])
-                r_Rch_zt[0, i] = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + \
-                                        pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
 
-            # дальность на траверсе
-            d0 = r_Rch_zt[0, q0 - q1]
+            t1 = (q0 - q1) * Tr
+            b = np.zeros((4, 1), dtype=np.float64)
+            b[0, 0], b[1, 0], b[2, 0], b[3, 0] = t1 ** 3, t1 ** 2, t1, 1.0
+            d0 = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
             # ar=Vrsa^2/d0  # радиальное ускорение для компенсации МД и МЧ
             # нескомпенсированные скорости для приемных каналов
             Vr1 = (Lrch / 2) / d0 * Vrsa
@@ -187,13 +183,22 @@ def route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             sum1 = 0
             sum2 = 0
             for q in range(q1 - 1, q2):
-                d = r_Rch_zt[0, q - q1 + 1]
+                b = np.zeros((4, 1), dtype=np.float64)
+                i = q - q1 + 1
+                t1 = i * Tr
+                b[0, 0] = t1 ** 3
+                b[1, 0] = t1 ** 2
+                b[2, 0] = t1
+                b[3, 0] = 1.0
+                # r_Rch_zt[0, i] =
+                d = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + \
+                    pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
                 # дробный номер отсчета по быстрому времени
                 ndr = (d / speedOfL - t_r_w + T0) * Kss * Fs - 1
                 n = int(ndr)
                 drob = ndr % 1
                 ut = Uout01ss[n, q] * (1 - drob) + Uout01ss[n + 1, q] * drob
-                fiq = 2 * math.pi / lamda * (r_Rch_zt[0, q - q1 + 1] - r_Rch_zt[0, q0 - q1])
+                fiq = 2 * math.pi / lamda * (d - d0)
                 # суммируем с учетом сдвига РЛИ по скорости
                 sum1 = sum1 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq) * e ** (
                         1j * 2 * np.pi * Vr1 / lamda * (q - q0 + 1) * Tr)
