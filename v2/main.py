@@ -10,7 +10,7 @@ from v2.detail_mode import detail_big_cycle1, detail_big_cycle2
 from v2.route_mode_gpu import gpu_route_big_cycle1, gpu_route_big_cycle2
 from v2.detail_mode_gpu import gpu_detail_big_cycle1, gpu_detail_big_cycle2
 
-# from v2.cupy_functions import cuifft
+from v2.cupy_functions import cuifft
 
 # МАРШРУТНЫЙ РЕЖИМ: построение РЛИ в координатах (широта/долгота) при
 # увеличенной частоты дискретизации.
@@ -188,7 +188,7 @@ def main(client_values):
 
     if GPUCalculationFlag:
         print()
-        # Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
+        Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
     else:
         Uout01ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
 
