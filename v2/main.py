@@ -95,6 +95,7 @@ with open('TS_and_RLI/ModelDate-14-May-2023 19.38.28.txt', 'r') as f:
 # считывание координат РСА из консорт-файла размерностью Q*14
 XYZ_rsa_ts = np.genfromtxt('TS_and_RLI/Consort-14-May-2023 19.38.28.txt', dtype=float, delimiter='  ')
 # считывание траекторного сигнала из файла
+
 with open('TS_and_RLI/Yts1-14-May-2023 19.38.28.bin', 'rb') as file:
     Yts = np.fromfile(file, dtype=np.int16).reshape((Q, 2 * N)).T
 
