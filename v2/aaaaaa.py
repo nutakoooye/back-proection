@@ -1,5 +1,5 @@
 
-def test_main(client_values):
+def test_main(client_values, consortPath:str):
     Kss = client_values['Kss']
     dxsint = client_values['dxsint']
     dysint = client_values['dysint']
@@ -11,7 +11,7 @@ def test_main(client_values):
     RegimRsa = client_values['RegimRsa']
     TypeWinDp = client_values['TypeWinDp']
     TypeWinDn = client_values['TypeWinDn']
-    isGPU = client_values['isGPU']
+    GPUCalculationFlag = client_values['isGPU']
     FlagViewSignal = client_values['FlagViewSignal']
 
 
