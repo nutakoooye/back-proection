@@ -70,7 +70,6 @@ def calc_rli(client_values):
     Yts2Path = client_values['Yts2Path']
     FlagViewSignal = client_values['FlagViewSignal'] # флаг отображения сигналов в ходе расчетов
     FlagWriteRli = client_values['FlagWriteRli']
-    # FlagWriteRli = 1
     NumRli = 1  # номер РЛИ в последовательности ***
 
 
