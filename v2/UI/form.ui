@@ -82,11 +82,11 @@ font-weight: 700;
     <string>Однопроходная интерферометрия</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox_2">
+  <widget class="QCheckBox" name="FlagViewSignal">
    <property name="geometry">
     <rect>
      <x>780</x>
-     <y>530</y>
+     <y>540</y>
      <width>181</width>
      <height>26</height>
     </rect>
@@ -98,9 +98,9 @@ font-weight: 700;
   <widget class="QPushButton" name="Start">
    <property name="geometry">
     <rect>
-     <x>780</x>
+     <x>980</x>
      <y>560</y>
-     <width>391</width>
+     <width>191</width>
      <height>61</height>
     </rect>
    </property>
@@ -626,7 +626,7 @@ font-weight: 700;
      </rect>
     </property>
     <property name="text">
-     <string>ВЫБРАТЬ ФАЙЛ ТС</string>
+     <string>ВЫБРАТЬ CONSORT ФАЙЛ</string>
     </property>
    </widget>
    <widget class="QWidget" name="horizontalLayoutWidget_2">
@@ -797,6 +797,19 @@ font-weight: 700;
     <string notr="true">background: #7b7c88;</string>
    </property>
   </widget>
+  <widget class="QCheckBox" name="FlagWriteRli">
+   <property name="geometry">
+    <rect>
+     <x>780</x>
+     <y>580</y>
+     <width>181</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Сохранить результат</string>
+   </property>
+  </widget>
   <zorder>frame_8</zorder>
   <zorder>frame_7</zorder>
   <zorder>frame_6</zorder>
@@ -804,10 +817,11 @@ font-weight: 700;
   <zorder>frame_3</zorder>
   <zorder>frame</zorder>
   <zorder>checkBox</zorder>
-  <zorder>checkBox_2</zorder>
+  <zorder>FlagViewSignal</zorder>
   <zorder>Start</zorder>
   <zorder>GPU</zorder>
   <zorder>greyLine</zorder>
+  <zorder>FlagWriteRli</zorder>
  </widget>
  <resources/>
  <connections/>
