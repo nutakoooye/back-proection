@@ -1,5 +1,4 @@
 import math
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -60,7 +59,7 @@ Tsint = 0.4  # время синтезирования
 StepBright = 1  # показатель степени при отображении
 FlagViewSignal = 1  # флаг отображения сигналов в ходе расчетов
 FlagWriteRli = 1
-GPUCalculationFlag = 0 # 1 - расчет на GPU, 0 - на CPU
+GPUCalculationFlag = 1 # 1 - расчет на GPU, 0 - на CPU
 tauRli = 0.3  # задержка начала построения РЛИ ***
 NumRli = 1  # номер РЛИ в последовательности ***
 
@@ -170,7 +169,10 @@ if Nrch == 2:
     # второй канал
     # новый вариант передискретизации - просто добавляем нули
     Goutss = oversampling(N, Q, Kss, Y02, Gh0ss)
-    Uout02ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
+    if GPUCalculationFlag:
+        Uout02ss = cuifft(Goutss) * np.sqrt(N * Kss)
+    else:
+        Uout02ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
 
 del Gh0ss
 # отображение сигналов до после ВПО при установленном флаге отображения
