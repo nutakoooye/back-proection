@@ -2,6 +2,8 @@
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QPushButton,QCheckBox,QGroupBox, QDoubleSpinBox, QSpinBox,QLabel, QRadioButton, QFileDialog,QMainWindow
 from PySide6.QtCore import Slot
+from v2.main import main
+
 app = QApplication([])
 window = QMainWindow()
 ui_file = "form.ui"
@@ -75,7 +77,7 @@ def button_start_clicked():
     }
     print('---Полученные значения от клиента---')
     print(returnedValues)
-
+    main(returnedValues)
 
 def open_file():
     file_dialog = QFileDialog()
