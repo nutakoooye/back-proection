@@ -161,8 +161,10 @@ np.fft.ifft = time_of_function(np.fft.ifft)
 
 Goutss = oversampling(N, Q, Kss, Y01, Gh0ss)
 
-#Uout01ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
-Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
+if GPUCalculationFlag:
+    Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
+else:
+    Uout01ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
 
 if Nrch == 2:
     # второй канал
