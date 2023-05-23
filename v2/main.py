@@ -64,6 +64,11 @@ def main(client_values):
     TypeWinDn = client_values['TypeWinDn']
     GPUCalculationFlag = client_values['isGPU']
 
+    ConsortPath = client_values['ConsortPath']
+    ModelDatePath = client_values['ModelDatePath']
+    Yts1Path = client_values['Yts1Path']
+    Yts2Path = client_values['Yts2Path']
+
     # FlagViewSignal = client_values['FlagViewSignal']
 
 
@@ -87,7 +92,7 @@ def main(client_values):
     ####################  Считывание исходных данных #########################
     # параметры Земли
     # считывание параметров моделирования из консорт-файла параметров РСА
-    with open('./TS_and_RLI/ModelDate-14-May-2023 19.38.28.txt', 'r') as f:
+    with open(ModelDatePath, 'r') as f:
         Hrsa = float(f.readline())  # высота орбиты РСА
         lamda = float(f.readline())  # длина волны
         alfa05Ar = float(f.readline())  # ширина главного лепестка ДН по азимуту
@@ -113,16 +118,16 @@ def main(client_values):
         dugConsort = float(f.readline())  # дискретность данных в консорт-файле по углам
 
     # считывание координат РСА из консорт-файла размерностью Q*14
-    XYZ_rsa_ts = np.genfromtxt('TS_and_RLI/Consort-14-May-2023 19.38.28.txt', dtype=float, delimiter='  ')
+    XYZ_rsa_ts = np.genfromtxt(ConsortPath, dtype=float, delimiter='  ')
     # считывание траекторного сигнала из файла
-    with open('TS_and_RLI/Yts1-14-May-2023 19.38.28.bin', 'rb') as file:
+    with open(Yts1Path, 'rb') as file:
         Yts = np.fromfile(file, dtype=np.int16).reshape((Q, 2 * N)).T
 
     # формируем комплексный массив и преобразуем его к целым числам
     Yts1r = Yts[:N, :Q] + 1j * Yts[N:2 * N, :Q]
 
     if Nrch == 2:
-        with open('TS_and_RLI/Yts2-14-May-2023 19.38.28.bin', 'rb') as file:
+        with open(Yts2Path, 'rb') as file:
             Yts = np.fromfile(file, dtype=np.int16).reshape((Q, 2 * N)).T
         # формируем комплексный массив и преобразуем его к целым числам
         Yts2r = Yts[:N, :Q] + 1j * Yts[N:2 * N, :Q]
