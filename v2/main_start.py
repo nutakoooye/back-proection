@@ -1,9 +1,18 @@
-
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QPushButton,QCheckBox,QGroupBox, QDoubleSpinBox, QSpinBox,QLabel, QRadioButton, QFileDialog,QMainWindow
+from PySide6.QtWidgets import (QApplication,
+                               QPushButton,
+                               QCheckBox,
+                               QGroupBox,
+                               QDoubleSpinBox,
+                               QSpinBox,
+                               QLabel,
+                               QRadioButton,
+                               QFileDialog,
+                               QMainWindow)
 from PySide6.QtCore import Slot
 from v2.calc_rli import calc_rli
 from v2.getFilesPath import getFilesPath
+
 app = QApplication([])
 window = QMainWindow()
 ui_file = "UI/form.ui"
@@ -18,19 +27,21 @@ QTypeWinDn = ui.findChild(QGroupBox, 'TypeWinDn')
 QTypeWinDp = ui.findChild(QGroupBox, 'TypeWinDp')
 
 pathUi = ui.findChild(QLabel, 'Path')
+
+
 @Slot()
 def button_start_clicked():
     mode3 = ui.findChild(QRadioButton, 'Detailmode').isChecked()
     selectedTypeWinDnArr = QTypeWinDn.findChildren(QRadioButton)
     selectedTypeWinDpArr = QTypeWinDp.findChildren(QRadioButton)
 
-    #Default values
+    # Default values
     TypeWinDn = 1
     TypeWinDp = 1
     RegimRsa = 2
     isGPU = ui.findChild(QCheckBox, 'GPU').isChecked()
-    #Ищем режим
-    if mode3:
+    # Ищем режим
+    if int(mode3):
         RegimRsa = 1
 
     # Ищем режим TypeWinDn
@@ -58,9 +69,9 @@ def button_start_clicked():
         'TypeWinDp': TypeWinDp,
         'TypeWinDn': TypeWinDn,
         'isGPU': isGPU,
-        'FlagViewSignal':ui.findChild(QCheckBox, 'FlagViewSignal').isChecked(),
+        'FlagViewSignal': ui.findChild(QCheckBox, 'FlagViewSignal').isChecked(),
         'FlagWriteRli': ui.findChild(QCheckBox, 'FlagWriteRli').isChecked(),
-        #'t_r_w': float(ui.findChild(QDoubleSpinBox, "t_r_w").text().replace(',', '.')),
+        # 't_r_w': float(ui.findChild(QDoubleSpinBox, "t_r_w").text().replace(',', '.')),
         'ConsortPath': ConsortPath,
         'ModelDatePath': ModelDatePath,
         'Yts1Path': Yts1Path,
@@ -68,17 +79,16 @@ def button_start_clicked():
     }
     calc_rli(returnedValues)
 
+
 def open_file():
     file_dialog = QFileDialog()
     file_path, _ = file_dialog.getOpenFileName(window, "Выберите файл")
-
 
     if file_path:
         pathUi.setText(file_path)
         fileNameLabel = ui.findChild(QLabel, 'File_name')
         fileNameLabel.setText(str(file_path).split("/")[-1])
         print(f"Выбран файл: {file_path}")
-
 
 
 button_uploadFile.clicked.connect(open_file)

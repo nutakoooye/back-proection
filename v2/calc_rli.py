@@ -10,7 +10,6 @@ from v2.detail_mode import detail_big_cycle1, detail_big_cycle2
 from v2.route_mode_gpu import gpu_route_big_cycle1, gpu_route_big_cycle2
 from v2.detail_mode_gpu import gpu_detail_big_cycle1, gpu_detail_big_cycle2
 
- # from v2.cupy_functions import cuifft
 
 # МАРШРУТНЫЙ РЕЖИМ: построение РЛИ в координатах (широта/долгота) при
 # увеличенной частоты дискретизации.
@@ -50,58 +49,63 @@ from v2.detail_mode_gpu import gpu_detail_big_cycle1, gpu_detail_big_cycle2
 
 # вариант задания исходных данных через форму
 def calc_rli(client_values):
-
     ####################  Считывание данных из UI #########################
-    Kss = client_values['Kss'] # коэффициент передискретизации
-    dxsint = client_values['dxsint'] # дискретность зоны синтезирования по Ox
-    dysint = client_values['dysint'] # дискретность зоны синтезирования по Oy
-    StepBright = client_values['StepBright'] # показатель степени при отображении
-    Nxsint = client_values['Nxsint'] # число точек по оси Ox (долготе)
-    Nysint = client_values['Nysint'] # число точек по оси Oy (широте)
-    Tsint = client_values['Tsint'] # время синтезирования
+    Kss = client_values['Kss']  # коэффициент передискретизации
+    dxsint = client_values['dxsint']  # дискретность зоны синтезирования по Ox
+    dysint = client_values['dysint']  # дискретность зоны синтезирования по Oy
+    StepBright = client_values['StepBright']  # показатель степени при отображении
+    Nxsint = client_values['Nxsint']  # число точек по оси Ox (долготе)
+    Nysint = client_values['Nysint']  # число точек по оси Oy (широте)
+    Tsint = client_values['Tsint']  # время синтезирования
     tauRli = client_values['tauRli']
-    RegimRsa = client_values['RegimRsa'] # режим радиолокационной съемки 1 - детальный, 2 - маршрутный
-    TypeWinDp = client_values['TypeWinDp'] # тип оконной функции при сжатии по поперечной дальности
-    TypeWinDn = client_values['TypeWinDn'] # тип оконной функции при сжатии по наклонной дальности
+    RegimRsa = client_values['RegimRsa']  # режим радиолокационной съемки 1 - детальный, 2 - маршрутный
+    TypeWinDp = client_values['TypeWinDp']  # тип оконной функции при сжатии по поперечной дальности
+    TypeWinDn = client_values['TypeWinDn']  # тип оконной функции при сжатии по наклонной дальности
     GPUCalculationFlag = client_values['isGPU']
     ConsortPath = client_values['ConsortPath']
     ModelDatePath = client_values['ModelDatePath']
     Yts1Path = client_values['Yts1Path']
     Yts2Path = client_values['Yts2Path']
-    FlagViewSignal = client_values['FlagViewSignal'] # флаг отображения сигналов в ходе расчетов
+    FlagViewSignal = client_values['FlagViewSignal']  # флаг отображения сигналов в ходе расчетов
     FlagWriteRli = client_values['FlagWriteRli']
     NumRli = 1  # номер РЛИ в последовательности ***
-
-
-
 
     ####################  Считывание исходных данных #########################
     # параметры Земли
     # считывание параметров моделирования из консорт-файла параметров РСА
+    ModelDate=[]
     with open(ModelDatePath, 'r') as f:
-        Hrsa = float(f.readline())  # высота орбиты РСА
-        lamda = float(f.readline())  # длина волны
-        alfa05Ar = float(f.readline())  # ширина главного лепестка ДН по азимуту
-        teta05Ar = float(f.readline())  # ширина главного лепестка ДН по углу места
-        T0 = float(f.readline())  # длительность импульса
-        Tr = float(f.readline())  # период повторения
-        df = float(f.readline())  # ширина спектра сигнала
-        Fs = float(f.readline())  # частота дискретизации
-        fizt0 = float(f.readline())  # широта центра участка синтезирования
-        betazt0 = float(f.readline())  # долгота центра участка синтезирования
-        bzc = float(f.readline())  # параметр согласованного фильтра bzc=pi*df/T0
-        t_r_w = float(f.readline())  # время задержки записи по отношению к началу периода
-        N = int(float(f.readline()))  # число отсчетов по быстрому времени
-        Q = int(float(f.readline()))  # число периодов повторения
-        Nrch = int(float(f.readline()))
-        Nrch = 1 # число приемных каналов
-        Lrch = float(f.readline())  # расстояние между фазовыми центрами приемных каналов
-        Vrsa = float(f.readline())  # скорость РСА
-        Tsint = float(f.readline())  # время синтезирования ?
-        Tst0 = float(f.readline())  # момент начала получения траекторного сигнала
-        dxConsort = float(f.readline())  # дискретность данных в консорт-файле по координатам
-        dVxConsort = float(f.readline())  # дискретность данных в консорт-файле по скорости
-        dugConsort = float(f.readline())  # дискретность данных в консорт-файле по углам
+        while True:
+            # считываем строку
+            line = f.readline()
+            if not line:
+                break
+            ModelDate.append(float(line))
+            # прерываем цикл, если строка пустая
+
+    Hrsa = ModelDate[0]  # высота орбиты РСА
+    lamda = ModelDate[1]  # длина волны
+    alfa05Ar = ModelDate[2]  # ширина главного лепестка ДН по азимуту
+    teta05Ar = ModelDate[3]  # ширина главного лепестка ДН по углу места
+    T0 = ModelDate[4]  # длительность импульса
+    Tr = ModelDate[5]  # период повторения
+    df = ModelDate[6]  # ширина спектра сигнала
+    Fs = ModelDate[7]  # частота дискретизации
+    fizt0 = ModelDate[8]  # широта центра участка синтезирования
+    betazt0 = ModelDate[9]  # долгота центра участка синтезирования
+    bzc = ModelDate[10]  # параметр согласованного фильтра bzc=pi*df/T0
+    t_r_w = ModelDate[11]  # время задержки записи по отношению к началу периода
+    N = int(ModelDate[12])  # число отсчетов по быстрому времени
+    Q = int(ModelDate[13])  # число периодов повторения
+    Nrch = int(ModelDate[14])
+    Nrch = 1  # число приемных каналов
+    Lrch = ModelDate[15]  # расстояние между фазовыми центрами приемных каналов
+    Vrsa = ModelDate[16]  # скорость РСА
+    Tsint = ModelDate[17]  # время синтезирования ?
+    Tst0 = ModelDate[18]  # момент начала получения траекторного сигнала
+    dxConsort = ModelDate[19]  # дискретность данных в консорт-файле по координатам
+    dVxConsort = ModelDate[20]  # дискретность данных в консорт-файле по скорости
+    dugConsort = ModelDate[21]  # дискретность данных в консорт-файле по углам
 
     # считывание координат РСА из консорт-файла размерностью Q*14
     XYZ_rsa_ts = np.genfromtxt(ConsortPath, dtype=float, delimiter='  ')
@@ -127,9 +131,7 @@ def calc_rli(client_values):
     speedOfL = 3 * 10 ** 8  # скорость света
     e = 2.71828
 
-    qst = int(tauRli / Tr) + 1 # номер периода повторение с которого начинаем расчет для детального режима
-    d_fi_sint = dysint / Rz  # дискретность по широте
-    d_beta_sint = dxsint / Rz / np.cos(fizt0)  # дискретность по долготе
+    qst = int(tauRli / Tr) + 1  # номер периода повторение с которого начинаем расчет для детального режима
 
     ######################### ОСНОВНЫЕ ВЫЧИСЛЕНИЯ ############################
     # вычисление внутрипериодных спектров сигналов приемных каналов
@@ -145,13 +147,13 @@ def calc_rli(client_values):
     # вычисление КЧХ фильтра с увеличенным числом отсчетов с учетом оконной функции
     h0ss = np.zeros(N * Kss, np.complex64)
     for n in range(int(T0 * Fs * Kss + 1)):
-        h0ss[n] = np.conj(ChirpSig(T0 - (n) / (Fs * Kss), T0, bzc)) * Win((T0 - (n) / (Fs * Kss)) / T0 - 0.5, 0, TypeWinDn)
+        h0ss[n] = np.conj(ChirpSig(T0 - (n) / (Fs * Kss), T0, bzc)) * Win((T0 - (n) / (Fs * Kss)) / T0 - 0.5, 0,
+                                                                          TypeWinDn)
 
     Gh0ss = np.fft.fft(h0ss)
     Gh0ss = Gh0ss / math.sqrt(N * Kss)
 
     del h0ss
-
 
     # передискретизация по наклонной дальности - дополнение спектра нулями
     # новый вариант передискретизации - просто добавляем нули
@@ -167,14 +169,13 @@ def calc_rli(client_values):
         return Goutss
         # 4 секунды копирование и перемножение матриц 16 - обратное БПФ
 
-
     np.fft.ifft = time_of_function(np.fft.ifft)
 
     Goutss = oversampling(N, Q, Kss, Y01, Gh0ss)
 
     if GPUCalculationFlag:
-        print()
-        #Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
+        from v2.cupy_functions import cuifft
+        Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
     else:
         Uout01ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
 
@@ -182,7 +183,11 @@ def calc_rli(client_values):
         # второй канал
         # новый вариант передискретизации - просто добавляем нули
         Goutss = oversampling(N, Q, Kss, Y02, Gh0ss)
-        Uout02ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
+        if GPUCalculationFlag:
+            from v2.cupy_functions import cuifft
+            Uout02ss = cuifft(Goutss) * np.sqrt(N * Kss)
+        else:
+            Uout02ss = np.fft.ifft(Goutss, axis=0) * np.sqrt(N * Kss)
 
     del Gh0ss
     # отображение сигналов до после ВПО при установленном флаге отображения
@@ -235,13 +240,15 @@ def calc_rli(client_values):
         if GPUCalculationFlag:
             if Nrch == 1:
                 Zxy1 = gpu_route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-                                        Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-                                        Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0)
+                                            Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                                            Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e,
+                                            T0)
             if Nrch == 2:
                 Zxy1, Zxy2 = gpu_route_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
-                                              Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-                                              Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e,
-                                              T0)
+                                                  Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                                                  Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda,
+                                                  WinSampl, e,
+                                                  T0)
         else:
             if Nrch == 1:
                 Zxy1 = route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
@@ -250,7 +257,8 @@ def calc_rli(client_values):
             if Nrch == 2:
                 Zxy1, Zxy2 = route_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
                                               Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-                                              Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e,
+                                              Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl,
+                                              e,
                                               T0)
     if RegimRsa == 1:  # детальный режим
         # подготовка исходных данных для расчета
@@ -288,13 +296,16 @@ def calc_rli(client_values):
         if GPUCalculationFlag:
             if Nrch == 1:
                 Zxy1 = gpu_detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-                                         Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-                                         Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                         sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+                                             Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
+                                             Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
+                                             sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
             if Nrch == 2:
-                Zxy1, Zxy2 = gpu_detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
-                                               Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-                                               Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,                                           sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+                Zxy1, Zxy2 = gpu_detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint,
+                                                   fizt0,
+                                                   Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq,
+                                                   tt,
+                                                   Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0, sumtt,
+                                                   sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
         else:
             if Nrch == 1:
                 Zxy1 = detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
@@ -357,14 +368,16 @@ def calc_rli(client_values):
     nqmax = np.argmax(np.abs(Zxy1))
     nmax1 = nqmax % Nxsint
     qmax1 = nqmax // Nxsint + 1
-    print(f'Zxy1({nmax1},{qmax1})={Zxy1max} x={(-Nxsint + 1) / 2 + nmax1 - 1 * dxsint} y={(-Nysint + 1) / 2 + qmax1 - 1 * dxsint}')
+    print(
+        f'Zxy1({nmax1},{qmax1})={Zxy1max} x={(-Nxsint + 1) / 2 + nmax1 - 1 * dxsint} y={(-Nysint + 1) / 2 + qmax1 - 1 * dxsint}')
 
     if Nrch == 2:
         Zxy2max = np.max(np.abs(Zxy2))
         nqmax = np.argmax(np.abs(Zxy2))
         nmax2 = nqmax % Nxsint
         qmax2 = nqmax // Nxsint + 1
-        print(f'Zxy2({nmax2},{qmax2})={Zxy2max} x={(-Nxsint + 1) / 2 + nmax2 - 1 * dxsint} y={(-Nysint + 1) / 2 + qmax2 - 1 * dxsint}')
+        print(
+            f'Zxy2({nmax2},{qmax2})={Zxy2max} x={(-Nxsint + 1) / 2 + nmax2 - 1 * dxsint} y={(-Nysint + 1) / 2 + qmax2 - 1 * dxsint}')
         print(f'Разность фаз={np.angle(Zxy1[nmax1, qmax1]) - np.angle(Zxy2[nmax2, qmax2])}')
 
     # Оценка отношения сигнал/шум

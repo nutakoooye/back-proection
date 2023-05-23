@@ -4,6 +4,7 @@ from numba import cuda
 from v1.utils import time_of_function, time_of_function_compile
 from v2.jit_functions import inverse_matrix_cuda4, dot_matrix_cuda, flip_and_transpose_cuda
 
+
 @cuda.jit
 def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                       Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
@@ -31,9 +32,9 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         for k in range(5):
             # получение координат фазового центра передающей антенны в НГцСК
             rrsa = cuda.local.array((3, 1), dtype=np.float64)
-            rrsa[0, 0]=XYZ_rsa_ts[qq[k], 0] * dxConsort
-            rrsa[1, 0]=XYZ_rsa_ts[qq[k], 1] * dxConsort
-            rrsa[2, 0]=XYZ_rsa_ts[qq[k], 2] * dxConsort
+            rrsa[0, 0] = XYZ_rsa_ts[qq[k], 0] * dxConsort
+            rrsa[1, 0] = XYZ_rsa_ts[qq[k], 1] * dxConsort
+            rrsa[2, 0] = XYZ_rsa_ts[qq[k], 2] * dxConsort
             # получение координат фазового центра приемного канала в НГцСК
             rRch = cuda.local.array((3, 1), dtype=np.float64)
             rRch[0, 0] = XYZ_rsa_ts[qq[k], 6] * dxConsort
@@ -48,25 +49,24 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             RR[k] = math.sqrt((rrsa[0,0] - rzt[0,0])**2+(rrsa[1,0] - rzt[1,0])**2+(rrsa[2,0] - rzt[2,0])**2)+\
                     math.sqrt((rRch[0,0] - rzt[0,0])**2+(rRch[1,0] - rzt[1,0])**2+(rRch[2,0] - rzt[2,0])**2)
         # аппроксимация дальности полиномом третьей степени
-        B0 = RR[0]+RR[1]+RR[2]+RR[3]+RR[4]
-        B1 = RR[0]*tt[0]+RR[1]*tt[1]+RR[2]*tt[2]+RR[3]*tt[3]+RR[4]*tt[4]
-        B2 = RR[0]*tt[0]**2+RR[1]*tt[1]**2+RR[2]*tt[2]**2+RR[3]*tt[3]**2+RR[4]*tt[4]**2
-        B3 = RR[0]*tt[0]**3+RR[1]*tt[1]**3+RR[2]*tt[2]**3+RR[3]*tt[3]**3+RR[4]*tt[4]**3
-        A = cuda.local.array((4,4), dtype=np.float64)
-        A[0,0],A[0,1],A[0,2],A[0,3]=5, sumtt, sumtt2, sumtt3
-        A[1,0],A[1,1],A[1,2],A[1,3]=sumtt, sumtt2, sumtt3, sumtt4
-        A[2,0],A[2,1],A[2,2],A[2,3]=sumtt2, sumtt3, sumtt4, sumtt5
-        A[3,0],A[3,1],A[3,2],A[3,3]=sumtt3, sumtt4, sumtt5, sumtt6
+        B0 = RR[0] + RR[1] + RR[2] + RR[3] + RR[4]
+        B1 = RR[0] * tt[0] + RR[1] * tt[1] + RR[2] * tt[2] + RR[3] * tt[3] + RR[4] * tt[4]
+        B2 = RR[0] * tt[0] ** 2 + RR[1] * tt[1] ** 2 + RR[2] * tt[2] ** 2 + RR[3] * tt[3] ** 2 + RR[4] * tt[4] ** 2
+        B3 = RR[0] * tt[0] ** 3 + RR[1] * tt[1] ** 3 + RR[2] * tt[2] ** 3 + RR[3] * tt[3] ** 3 + RR[4] * tt[4] ** 3
+        A = cuda.local.array((4, 4), dtype=np.float64)
+        A[0, 0], A[0, 1], A[0, 2], A[0, 3] = 5, sumtt, sumtt2, sumtt3
+        A[1, 0], A[1, 1], A[1, 2], A[1, 3] = sumtt, sumtt2, sumtt3, sumtt4
+        A[2, 0], A[2, 1], A[2, 2], A[2, 3] = sumtt2, sumtt3, sumtt4, sumtt5
+        A[3, 0], A[3, 1], A[3, 2], A[3, 3] = sumtt3, sumtt4, sumtt5, sumtt6
         B = cuda.local.array((4, 1), dtype=np.float64)
-        B[0,0],B[1,0],B[2,0],B[3,0]=B0, B1, B2, B3
-        A_inv = cuda.local.array((4,4), dtype=np.float64)
+        B[0, 0], B[1, 0], B[2, 0], B[3, 0] = B0, B1, B2, B3
+        A_inv = cuda.local.array((4, 4), dtype=np.float64)
         inverse_matrix_cuda4(A, A_inv)
         pr = cuda.local.array((4, 1), dtype=np.float64)
-        dot_matrix_cuda(A_inv,B,pr)
-        pr1=cuda.local.array((1,4),dtype=np.float64)
+        dot_matrix_cuda(A_inv, B, pr)
+        pr1 = cuda.local.array((1, 4), dtype=np.float64)
         flip_and_transpose_cuda(pr, pr1)
         # вычисляем все дальности на интервале наблюдения
-
 
         # дальность на траверсе
         d0 = pr[0, 0]
@@ -86,7 +86,7 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             b[3, 0] = 1.0
             # r_Rch_zt[0, i] =
             d = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + \
-                             pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
+                pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
             # дробный номер отсчета по быстрому времени
             ndr = (d / speedOfL - t_r_w + T0) * Kss * Fs - 1
             n = int(ndr)
@@ -196,9 +196,9 @@ def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
 
 @time_of_function
 def gpu_detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-              Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-              Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-              sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst):
+                          Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
+                          Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
+                          sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst):
     threads_per_block = (16, 16)
     blocks_per_grid_x = math.ceil(Zxy1.shape[0] / threads_per_block[0])
     blocks_per_grid_y = math.ceil(Zxy1.shape[1] / threads_per_block[1])

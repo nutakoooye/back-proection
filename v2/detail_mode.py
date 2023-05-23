@@ -2,6 +2,7 @@ import numpy as np
 import numba as nb
 import math
 
+
 @nb.jit(nopython=True)
 def detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                       Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
@@ -35,7 +36,7 @@ def detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                 rRch = np.array(
                     [[XYZ_rsa_ts[qq[k], 6]], [XYZ_rsa_ts[qq[k], 7]], [XYZ_rsa_ts[qq[k], 8]]]) * dxConsort
 
-                    # вычисление координат земной точки в НГцСК
+                # вычисление координат земной точки в НГцСК
                 rzt[0, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.cos(
                     2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
                 rzt[1, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.sin(
@@ -59,7 +60,7 @@ def detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                 t1 = i * Tr
                 b = np.array([[t1 ** 3], [t1 ** 2], [t1], [1.0]])
                 r_Rch_zt[0, i] = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + \
-                                        pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
+                                 pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
 
             # дальность на траверсе
             d0 = r_Rch_zt[0, 0]

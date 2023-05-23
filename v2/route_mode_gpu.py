@@ -8,8 +8,8 @@ from v2.jit_functions import inverse_matrix_cuda3, dot_matrix_cuda, flip_and_tra
 
 @cuda.jit
 def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-               Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-               Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
+                      Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                      Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
     nx, ny = cuda.grid(2)
     if nx < Zxy1.shape[0] and ny < Zxy1.shape[1]:
         # координаты текущей точки наблюдения
@@ -77,18 +77,18 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             # вектор координат точки земной поверхности в ССК
             rzt_ssk = cuda.local.array((3, 1), dtype=np.float64)
             rztrrsa = cuda.local.array((3, 1), dtype=np.float64)
-            rztrrsa[0,0],rztrrsa[1,0],rztrrsa[2,0]=rzt[0,0]-rrsa[0,0],rzt[1,0]-rrsa[1,0],rzt[2,0]-rrsa[2,0]
-            dot_matrix_cuda(M_ngsk_ssk,rztrrsa, rzt_ssk)
+            rztrrsa[0, 0], rztrrsa[1, 0], rztrrsa[2, 0] = rzt[0, 0] - rrsa[0, 0], rzt[1, 0] - rrsa[1, 0], rzt[2, 0] -  rrsa[2, 0]
+            dot_matrix_cuda(M_ngsk_ssk, rztrrsa, rzt_ssk)
             # матрица пересчета из антенной системы в скоростную
             al = XYZ_rsa_ts[qq[i], 12] * dugConsort
             be = XYZ_rsa_ts[qq[i], 13] * dugConsort
             Msskask = cuda.local.array((3, 3), dtype=np.float64)
-            Msskask[0,0],Msskask[0,1],Msskask[0,2]=np.cos(al) * np.cos(be), np.sin(al) * np.cos(be), np.sin(be)
-            Msskask[1,0],Msskask[1,1],Msskask[1,2]=-np.sin(al), np.cos(al), 0
-            Msskask[2,0],Msskask[2,1],Msskask[2,2]=-np.cos(al) * np.sin(be), -np.sin(al) * np.sin(be), np.cos(be)
+            Msskask[0, 0], Msskask[0, 1], Msskask[0, 2] = np.cos(al) * np.cos(be), np.sin(al) * np.cos(be), np.sin(be)
+            Msskask[1, 0], Msskask[1, 1], Msskask[1, 2] = -np.sin(al), np.cos(al), 0
+            Msskask[2, 0], Msskask[2, 1], Msskask[2, 2] = -np.cos(al) * np.sin(be), -np.sin(al) * np.sin(be), np.cos(be)
             # вектор координат точки земной поверхности в АСК
-            rzt_ask=cuda.local.array((3, 1), dtype=np.float64)
-            dot_matrix_cuda(Msskask,rzt_ssk,rzt_ask)
+            rzt_ask = cuda.local.array((3, 1), dtype=np.float64)
+            dot_matrix_cuda(Msskask, rzt_ssk, rzt_ask)
             # азимут земной точки относительно нормали к антенной системе
             RRaz[i] = math.atan(rzt_ask[1, 0] / rzt_ask[2, 0])
 
@@ -99,8 +99,7 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         sumtt4 = tt[0] ** 4 + tt[1] ** 4 + tt[2] ** 4 + tt[3] ** 4 + tt[4] ** 4
         B0 = RRaz[0] + RRaz[1] + RRaz[2] + RRaz[3] + RRaz[4]
         B1 = RRaz[0] * tt[0] + RRaz[1] * tt[1] + RRaz[2] * tt[2] + RRaz[3] * tt[3] + RRaz[4] * tt[4]
-        B2 = RRaz[0] * tt[0] ** 2 + RRaz[1] * tt[1] ** 2 + RRaz[2] * tt[2] ** 2 + RRaz[3] * tt[3] ** 2 + RRaz[4] * tt[
-            4] ** 2
+        B2 = RRaz[0] * tt[0] ** 2 + RRaz[1] * tt[1] ** 2 + RRaz[2] * tt[2] ** 2 + RRaz[3] * tt[3] ** 2 + RRaz[4] * tt[4] ** 2
 
         A = cuda.local.array((3, 3), dtype=np.float64)
         A[0, 0], A[0, 1], A[0, 2] = 5, sumtt, sumtt2
@@ -113,7 +112,7 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         pazd = cuda.local.array((3, 1), dtype=np.float64)
         dot_matrix_cuda(A_inv, B, pazd)
         paz = cuda.local.array((1, 3), dtype=np.float64)
-        flip_and_transpose_cuda(pazd,paz)
+        flip_and_transpose_cuda(pazd, paz)
         # определяем время прохождения траверса и интервал индексов отсчетов
         # для суммирования отсчетов
         aa = paz[0, 0]
@@ -161,14 +160,13 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             rRch[0, 0] = XYZ_rsa_ts[qq[k], 6] * dxConsort
             rRch[1, 0] = XYZ_rsa_ts[qq[k], 7] * dxConsort
             rRch[2, 0] = XYZ_rsa_ts[qq[k], 8] * dxConsort
-                # вычисление координат земной точки в НГцСК
+            # вычисление координат земной точки в НГцСК
             rzt[0, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.cos(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
             rzt[1, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.sin(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
             rzt[2, 0] = (Rz + Hzt) * np.sin(fizt + fiztSh * tt[k])
-            RR[k] = math.sqrt(
-                (rrsa[0, 0] - rzt[0, 0]) ** 2 + (rrsa[1, 0] - rzt[1, 0]) ** 2 + (rrsa[2, 0] - rzt[2, 0]) ** 2) + \
+            RR[k] = math.sqrt((rrsa[0, 0] - rzt[0, 0]) ** 2 + (rrsa[1, 0] - rzt[1, 0]) ** 2 + (rrsa[2, 0] - rzt[2, 0]) ** 2) + \
                     math.sqrt((rRch[0, 0] - rzt[0, 0]) ** 2 + (rRch[1, 0] - rzt[1, 0]) ** 2 + (rRch[2, 0] - rzt[2, 0]) ** 2)
         # аппроксимация дальности полиномом третьей степени
         sumtt = tt[0] + tt[1] + tt[2] + tt[3] + tt[4]
@@ -197,9 +195,9 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         flip_and_transpose_cuda(pr, pr1)
 
         # дальность на траверсе
-        t1 = (q0-q1) * Tr
-        b = cuda.local.array((4,1), dtype=np.float64)
-        b[0,0],b[1,0],b[2,0],b[3,0]=t1 ** 3, t1 ** 2, t1, 1.0
+        t1 = (q0 - q1) * Tr
+        b = cuda.local.array((4, 1), dtype=np.float64)
+        b[0, 0], b[1, 0], b[2, 0], b[3, 0] = t1 ** 3, t1 ** 2, t1, 1.0
         d0 = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
         # ar=Vrsa^2/d0  # радиальное ускорение для компенсации МД и МЧ
         # нескомпенсированные скорости для приемных каналов
@@ -232,8 +230,8 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
 
 @cuda.jit
 def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
-               Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-               Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
+                      Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                      Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
     nx, ny = cuda.grid(2)
     # координаты текущей точки наблюдения
     xt = (-(Nxsint - 1) / 2 + nx) * dxsint
@@ -438,10 +436,11 @@ def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
     Zxy1[nx, ny] = sum1
     Zxy2[nx, ny] = sum2
 
+
 @time_of_function
 def gpu_route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-               Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-               Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
+                         Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                         Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
     threads_per_block = (16, 16)
     blocks_per_grid_x = math.ceil(Zxy1.shape[0] / threads_per_block[0])
     blocks_per_grid_y = math.ceil(Zxy1.shape[1] / threads_per_block[1])
@@ -456,8 +455,8 @@ def gpu_route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
 
 @time_of_function
 def gpu_route_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
-               Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
-               Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
+                         Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
+                         Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
     threads_per_block = (16, 16)
     blocks_per_grid_x = math.ceil(Zxy1.shape[0] / threads_per_block[0])
     blocks_per_grid_y = math.ceil(Zxy1.shape[1] / threads_per_block[1])
