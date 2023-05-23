@@ -1,4 +1,5 @@
 import math
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -47,21 +48,40 @@ from v2.cupy_functions import cuifft
 # 10 - Блекмана-Херриса (-92 дБ)
 
 # вариант задания исходных данных через форму
-RegimRsa = 1  # режим радиолокационной съемки 1 - детальный, 2 - маршрутный
-TypeWinDn = 1  # тип оконной функции при сжатии по наклонной дальности
-TypeWinDp = 1  # тип оконной функции при сжатии по поперечной дальности
-dxsint = 1  # дискретность зоны синтезирования по Ox
-dysint = 1  # дискретность зоны синтезирования по Oy
-Nxsint = 200  # число точек по оси Ox (долготе)
-Nysint = 200  # число точек по оси Oy (широте)
-Kss = 4  # коэффициент передискретизации
-Tsint = 0.4  # время синтезирования
-StepBright = 1  # показатель степени при отображении
-FlagViewSignal = 1  # флаг отображения сигналов в ходе расчетов
-FlagWriteRli = 1
-GPUCalculationFlag = 1 # 1 - расчет на GPU, 0 - на CPU
-tauRli = 0.3  # задержка начала построения РЛИ ***
-NumRli = 1  # номер РЛИ в последовательности ***
+def main(client_values):
+
+    Kss = client_values['Kss']
+    dxsint = client_values['dxsint']
+    dysint = client_values['dysint']
+    StepBright = client_values['StepBright']
+    Nxsint = client_values['Nxsint']
+    Nysint = client_values['Nysint']
+    Tsint = client_values['Tsint']
+    tauRli = client_values['tauRli']
+    RegimRsa = client_values['RegimRsa']
+    TypeWinDp = client_values['TypeWinDp']
+    TypeWinDn = client_values['TypeWinDn']
+    GPUCalculationFlag = client_values['isGPU']
+
+    # FlagViewSignal = client_values['FlagViewSignal']
+
+
+
+    # RegimRsa = 1  # режим радиолокационной съемки 1 - детальный, 2 - маршрутный
+    # TypeWinDn = 1  # тип оконной функции при сжатии по наклонной дальности
+    # TypeWinDp = 1  # тип оконной функции при сжатии по поперечной дальности
+    # dxsint = 1  # дискретность зоны синтезирования по Ox
+    # dysint = 1  # дискретность зоны синтезирования по Oy
+    # Nxsint = 200  # число точек по оси Ox (долготе)
+    # Nysint = 200  # число точек по оси Oy (широте)
+    # Kss = 4  # коэффициент передискретизации
+    # Tsint = 0.4  # время синтезирования ?????????????????
+    # StepBright = 1  # показатель степени при отображении
+    FlagViewSignal = 1  # флаг отображения сигналов в ходе расчетов
+    FlagWriteRli = 1 # ????????????????
+    # GPUCalculationFlag = 0 # 1 - расчет на GPU, 0 - на CPU
+    # tauRli = 0.3  # задержка начала построения РЛИ ***
+    NumRli = 1  # номер РЛИ в последовательности ***
 
 ####################  Считывание исходных данных #########################
 # параметры Земли
