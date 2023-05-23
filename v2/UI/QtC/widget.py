@@ -3,7 +3,7 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QPushButton,QCheckBox,QGroupBox, QDoubleSpinBox, QSpinBox,QLabel, QRadioButton, QFileDialog,QMainWindow
 from PySide6.QtCore import Slot
 from v2.main import main
-from v2.aaaaaa import getFilesPath
+from v2.getFilesPath import getFilesPath
 app = QApplication([])
 window = QMainWindow()
 ui_file = "form.ui"
@@ -83,7 +83,6 @@ def button_start_clicked():
         # мб не то :)
     }
     print('---Полученные значения от клиента---')
-    print(returnedValues)
 
 
     main(returnedValues)
@@ -104,8 +103,7 @@ def open_file():
 
 
 button_uploadFile.clicked.connect(open_file)
-# window.setCentralWidget(button)
-# window.show()
+
 button_start.clicked.connect(button_start_clicked)
 
 ui.show()
