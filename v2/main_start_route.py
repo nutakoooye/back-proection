@@ -19,7 +19,7 @@ from v2.getFilesPath import getFilesPath
 
 app = QApplication([])
 window = QMainWindow()
-ui_file = "UI/main.ui"
+ui_file = "UI/route.ui"
 loader = QUiLoader()
 ui = loader.load(ui_file)
 
@@ -55,15 +55,6 @@ def QPrint(value):
 
 def button_start_clicked():
     # Default values
-    TypeWinDn = 1
-    TypeWinDp = 1
-    RegimRsa = 2
-    isGPU = ui.findChild(QCheckBox, 'GPU').isChecked()
-    # Ищем режим
-    isDetail = ui.findChild(QRadioButton, 'Detailmode').isChecked()
-    if int(isDetail):
-        RegimRsa = 1
-
     # Ищем пути к файлам
     ConsortPath, ModelDatePath, Yts1Path, Yts2Path = getFilesPath(str(pathUi.text()))
     print(comboBox_Dp.currentIndex())
@@ -78,10 +69,10 @@ def button_start_clicked():
         'Nysint': int(ui.findChild(QSpinBox, "Nysint").text()),
         'Tsint': float(ui.findChild(QDoubleSpinBox, "Tsint").text().replace(',', '.')),
         'tauRli': float(ui.findChild(QDoubleSpinBox, "tauRli").text().replace(',', '.')),
-        'RegimRsa': RegimRsa,
-        'TypeWinDp': comboBox_Dp.currentIndex() + 1,
-        'TypeWinDn': comboBox_Dn.currentIndex() + 1,
-        'isGPU': isGPU,
+        'RegimRsa': 2,
+        'TypeWinDp': comboBox_Dp.currentIndex(),
+        'TypeWinDn': comboBox_Dn.currentIndex(),
+        'isGPU': ui.findChild(QCheckBox, 'GPU').isChecked(),
         'FlagViewSignal': ui.findChild(QCheckBox, 'FlagViewSignal').isChecked(),
         'FlagWriteRli': ui.findChild(QCheckBox, 'FlagWriteRli').isChecked(),
         'ConsortPath': ConsortPath,
@@ -89,7 +80,7 @@ def button_start_clicked():
         'Yts1Path': Yts1Path,
         'Yts2Path': Yts2Path
     }
-    print(returnedValues['TypeWinDp'])
+
     print('Запуск расчета...')
     calc_rli(returnedValues, QPrint)
 
@@ -110,33 +101,10 @@ def open_file():
                 if not line:
                     break
                 ModelDateContent.append(float(line))
-        ModelDateLabel = ui.findChild(QTextBrowser, 'textBrowserModalDate')
-        RowsAndCulCount = ui.findChild(QTextBrowser,'RowsAndCulCount')
-        formData = f"высота орбиты РСА = {format(ModelDateContent[0])}\n" \
-                   f"длина волны = {format(ModelDateContent[1])}\n" \
-                   f"ширина главного лепестка ДН по азимуту = {format(ModelDateContent[2])}\n" \
-                   f"ширина главного лепестка ДН по углу места = {format(ModelDateContent[3])}\n"\
-                    f"длительность импульса = {format(ModelDateContent[4])}\n" \
-                    f"период повторения = {format(ModelDateContent[5])}\n" \
-                    f"ширина спектра сигнала = {format(ModelDateContent[6])}\n" \
-                    f"частота дискретизации = {format(ModelDateContent[7])}\n" \
-                   f"широта центра участка синтезирования = {format(ModelDateContent[8])}\n" \
-                    f"параметр согласованного фильтра bzc=pi*df/T0 = {format(ModelDateContent[10])}\n" \
-                   f"время задержки записи по отношению к началу периода = {format(ModelDateContent[11])}\n" \
-                   f"число отсчетов по быстрому времени = {format(ModelDateContent[12])}\n" \
-                   f"число периодов повторения = {format(ModelDateContent[13])}\n" \
-                   f"число приемных каналов = {format(ModelDateContent[14])}\n" \
-                   f"расстояние между фазовыми центрами приемных каналов = {format(ModelDateContent[15])}\n" \
-                   f"скорость РСА = {format(ModelDateContent[16])}\n" \
-                    f"время синтезирования = {format(ModelDateContent[17])}\n" \
-                    f"момент начала получения траекторного сигнала = {format(ModelDateContent[18])}\n" \
-                    f"дискретность данных в консорт-файле по координатам = {format(ModelDateContent[19])}\n" \
-                    f"дискретность данных в консорт-файле по скорости = {format(ModelDateContent[20])}\n" \
-                    f"дискретность данных в консорт-файле по углам = {format(ModelDateContent[21])}"
 
-        ModelDateLabel.setText(formData)
-        RowsAndCulCount.setText(f"Размер входного массива - {int(ModelDateContent[12])} x {int(ModelDateContent[13])}\n " \
-                                f"type Int16\n" \
+        RowsAndCulCount = ui.findChild(QTextBrowser,'RowsAndCulCount')
+        RowsAndCulCount.setText(f"Размер массива - {int(ModelDateContent[12])} x {int(ModelDateContent[13])}\n " \
+                                f"Тип: Int16\n" \
                                 f"Размер файла Yts1 - {(int(ModelDateContent[12])*int(ModelDateContent[13])*2*2)/1024/1024} Мб")
         fileNameLabel = ui.findChild(QLabel, 'File_name')
         fileNameLabel.setText(str(file_path).split("/")[-1])

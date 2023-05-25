@@ -41,11 +41,11 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             rRch[1, 0] = XYZ_rsa_ts[qq[k], 7] * dxConsort
             rRch[2, 0] = XYZ_rsa_ts[qq[k], 8] * dxConsort
             # вычисление координат земной точки в НГцСК
-            rzt[0, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.cos(
+            rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.cos(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-            rzt[1, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.sin(
+            rzt[1, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.sin(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-            rzt[2, 0] = (Rz + Hzt) * np.sin(fizt + fiztSh * tt[k])
+            rzt[2, 0] = (Rz + Hzt) * math.sin(fizt + fiztSh * tt[k])
             RR[k] = math.sqrt((rrsa[0,0] - rzt[0,0])**2+(rrsa[1,0] - rzt[1,0])**2+(rrsa[2,0] - rzt[2,0])**2)+\
                     math.sqrt((rRch[0,0] - rzt[0,0])**2+(rRch[1,0] - rzt[1,0])**2+(rRch[2,0] - rzt[2,0])**2)
         # аппроксимация дальности полиномом третьей степени
@@ -137,11 +137,11 @@ def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
                 rRch = np.array(
                     [[XYZ_rsa_ts[qq[k], 9]], [XYZ_rsa_ts[qq[k], 10]], [XYZ_rsa_ts[qq[k], 11]]]) * dxConsort
                 # вычисление координат земной точки в НГцСК
-            rzt[0, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.cos(
+            rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.cos(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-            rzt[1, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.sin(
+            rzt[1, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.sin(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-            rzt[2, 0] = (Rz + Hzt) * np.sin(fizt + fiztSh * tt[k])
+            rzt[2, 0] = (Rz + Hzt) * math.sin(fizt + fiztSh * tt[k])
             RR[k] = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch - rzt)
         # аппроксимация дальности полиномом третьей степени
         B0 = np.sum(RR)

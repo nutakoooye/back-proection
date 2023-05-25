@@ -16,19 +16,19 @@ def Win(tau, delta, n):
     Wrect = lambda tau, delta: 1
 
     # 2 - косинус на пъедестале, при delta=0.54 - Хэмминга (-42.7 дБ)
-    Wcos = lambda tau, delta: delta + (1 - delta) * np.cos(np.pi * tau)
+    Wcos = lambda tau, delta: delta + (1 - delta) * math.cos(np.pi * tau)
 
     # 3 - косинус квадрат на пъедестале
-    Wcos2 = lambda tau, delta: delta + (1 - delta) * (np.cos(np.pi * tau) ** 2)
+    Wcos2 = lambda tau, delta: delta + (1 - delta) * (math.cos(np.pi * tau) ** 2)
 
     # 4 - Хэмминга (-42.7 дБ)
-    Whemming = lambda tau, delta: 0.54 + 0.46 * np.cos(np.pi * tau)
+    Whemming = lambda tau, delta: 0.54 + 0.46 * math.cos(np.pi * tau)
 
     # 5 - Хэннинга в третье степени на пъедестале (-39.3 дБ)
-    Whenning3 = lambda tau, delta: delta + (1 - delta) * (np.cos(np.pi * tau) ** 3)
+    Whenning3 = lambda tau, delta: delta + (1 - delta) * (math.cos(np.pi * tau) ** 3)
 
     # 6 - Хэннинга в четвертой степени на пъедестале (-46.7 дБ)
-    Whenning4 = lambda tau, delta: delta + (1 - delta) * (np.cos(np.pi * tau) ** 4)
+    Whenning4 = lambda tau, delta: delta + (1 - delta) * (math.cos(np.pi * tau) ** 4)
 
     # 7,8,9 - Кайзера-Бесселя для alfa=2.7; 3.1; 3.5 (-62.5; -72ю1; -81.8 дБ)
     Wkb27 = lambda tau, delta: iv(0, 2.7 * np.pi * np.sqrt(1 - (2 * tau) ** 2)) / iv(0, 2.7 * np.pi)
@@ -36,8 +36,8 @@ def Win(tau, delta, n):
     Wkb35 = lambda tau, delta: iv(0, 3.5 * np.pi * np.sqrt(1 - (2 * tau) ** 2)) / iv(0, 3.5 * np.pi)
 
     # 10 - Блекмана-Херриса (-92 дБ)
-    Wbx = lambda tau, delta: 0.35875 + 0.48829 * np.cos(2 * np.pi * tau) + 0.14128 * np.cos(
-        4 * np.pi * tau) + 0.01168 * np.cos(6 * np.pi * tau)
+    Wbx = lambda tau, delta: 0.35875 + 0.48829 * math.cos(2 * np.pi * tau) + 0.14128 * math.cos(
+        4 * np.pi * tau) + 0.01168 * math.cos(6 * np.pi * tau)
 
     if n == 1:
         W = Wrect(tau, delta)

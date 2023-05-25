@@ -10,7 +10,6 @@ from v2.detail_mode import detail_big_cycle1, detail_big_cycle2
 from v2.route_mode_gpu import gpu_route_big_cycle1, gpu_route_big_cycle2
 from v2.detail_mode_gpu import gpu_detail_big_cycle1, gpu_detail_big_cycle2
 
-
 # МАРШРУТНЫЙ РЕЖИМ: построение РЛИ в координатах (широта/долгота) при
 # увеличенной частоты дискретизации.
 # Вход: 
@@ -48,7 +47,7 @@ from v2.detail_mode_gpu import gpu_detail_big_cycle1, gpu_detail_big_cycle2
 # 10 - Блекмана-Херриса (-92 дБ)
 
 # вариант задания исходных данных через форму
-def calc_rli(client_values):
+def calc_rli(client_values, QPrint):
     ####################  Считывание данных из UI #########################
     Kss = client_values['Kss']  # коэффициент передискретизации
     dxsint = client_values['dxsint']  # дискретность зоны синтезирования по Ox
@@ -172,7 +171,6 @@ def calc_rli(client_values):
     np.fft.ifft = time_of_function(np.fft.ifft)
 
     Goutss = oversampling(N, Q, Kss, Y01, Gh0ss)
-
     if GPUCalculationFlag:
         from v2.cupy_functions import cuifft
         Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
@@ -212,7 +210,6 @@ def calc_rli(client_values):
         plt.xlabel('Наклонная дальность')
         plt.ylabel('Период повторения')
         plt.title('Сигналы на входе ВПО')
-
         Vrli0 = (np.abs(Uout01ss.T) ** StepBright)
         Vrli0 = Vrli0 / np.max(np.max(Vrli0))
         Vrli0 = np.flipud(Vrli0)
@@ -270,6 +267,7 @@ def calc_rli(client_values):
         if q2 > Q:
             q2 = Q
             print('Интервал синтезирования выходит за пределы траекторного сигнала')
+            # QPrint('Интервал синтезирования выходит за пределы траекторного сигнала')
 
         # подготовительные операции для аппроксимации дальности
         qq = np.empty(5, dtype=np.int32)
@@ -298,25 +296,25 @@ def calc_rli(client_values):
                 Zxy1 = gpu_detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                                              Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
                                              Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                             sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+                                             sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst, QPrint)
             if Nrch == 2:
                 Zxy1, Zxy2 = gpu_detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint,
                                                    fizt0,
                                                    Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq,
                                                    tt,
                                                    Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0, sumtt,
-                                                   sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+                                                   sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst, QPrint)
         else:
             if Nrch == 1:
                 Zxy1 = detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                                          Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
                                          Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                         sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+                                         sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst, QPrint)
             if Nrch == 2:
                 Zxy1, Zxy2 = detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
                                                Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
                                                Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                               sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+                                               sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst, QPrint)
 
     if FlagViewSignal == 1:
         # Трехмерное РЛИ-1
@@ -370,7 +368,8 @@ def calc_rli(client_values):
     qmax1 = nqmax // Nxsint + 1
     print(
         f'Zxy1({nmax1},{qmax1})={Zxy1max} x={(-Nxsint + 1) / 2 + nmax1 - 1 * dxsint} y={(-Nysint + 1) / 2 + qmax1 - 1 * dxsint}')
-
+    QPrint(
+         f'Zxy1({nmax1},{qmax1})={Zxy1max} x={(-Nxsint + 1) / 2 + nmax1 - 1 * dxsint} y={(-Nysint + 1) / 2 + qmax1 - 1 * dxsint}')
     if Nrch == 2:
         Zxy2max = np.max(np.abs(Zxy2))
         nqmax = np.argmax(np.abs(Zxy2))
@@ -378,20 +377,24 @@ def calc_rli(client_values):
         qmax2 = nqmax // Nxsint + 1
         print(
             f'Zxy2({nmax2},{qmax2})={Zxy2max} x={(-Nxsint + 1) / 2 + nmax2 - 1 * dxsint} y={(-Nysint + 1) / 2 + qmax2 - 1 * dxsint}')
+        QPrint(
+             f'Zxy2({nmax2},{qmax2})={Zxy2max} x={(-Nxsint + 1) / 2 + nmax2 - 1 * dxsint} y={(-Nysint + 1) / 2 + qmax2 - 1 * dxsint}')
         print(f'Разность фаз={np.angle(Zxy1[nmax1, qmax1]) - np.angle(Zxy2[nmax2, qmax2])}')
+        QPrint(f'Разность фаз={np.angle(Zxy1[nmax1, qmax1]) - np.angle(Zxy2[nmax2, qmax2])}')
 
     # Оценка отношения сигнал/шум
     Psh = np.sum(np.abs(Zxy1) ** 2) / float(Nxsint) / float(Nysint)
     print(f'ОСШ максимальное={np.max(np.abs(Zxy1) ** 2) / Psh}')
-
+    QPrint(f'ОСШ максимальное={np.max(np.abs(Zxy1) ** 2) / Psh}')
     t = np.datetime64('now')
     print(f'Завершение РЛИ xy {t}')
-
+    QPrint(f'Завершение РЛИ xy {t}')
     # Запись сформированного РЛИ в файл
     # Сначала записывается массив N*Q реальных значений, потом массив мнимых значений;
     # общая размерность 2*2N*Q байт
     if FlagWriteRli == 1:
         print('Запись РЛИ в файл')
+        QPrint('Запись РЛИ в файл')
         # первый канал
         Zxy = np.zeros((2 * Nxsint, Nysint), dtype=np.float64)
         Zxy[:Nxsint, :] = np.real(Zxy1[:Nxsint, :Nysint])
@@ -420,5 +423,7 @@ def calc_rli(client_values):
             fileID.close()
 
     print('РЛИ записаны в файл')
+    QPrint('РЛИ записаны в файл')
     t = np.datetime64('now')
     print(f'Завершение РЛИ xy {t}')
+    QPrint(f'Завершение РЛИ xy {t}')
