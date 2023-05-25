@@ -267,7 +267,7 @@ def calc_rli(client_values, QPrint):
         if q2 > Q:
             q2 = Q
             print('Интервал синтезирования выходит за пределы траекторного сигнала')
-            # QPrint('Интервал синтезирования выходит за пределы траекторного сигнала')
+            QPrint('Интервал синтезирования выходит за пределы траекторного сигнала')
 
         # подготовительные операции для аппроксимации дальности
         qq = np.empty(5, dtype=np.int32)
@@ -296,25 +296,25 @@ def calc_rli(client_values, QPrint):
                 Zxy1 = gpu_detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                                              Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
                                              Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                             sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst, QPrint)
+                                             sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
             if Nrch == 2:
                 Zxy1, Zxy2 = gpu_detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint,
                                                    fizt0,
                                                    Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq,
                                                    tt,
                                                    Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0, sumtt,
-                                                   sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst, QPrint)
+                                                   sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
         else:
             if Nrch == 1:
                 Zxy1 = detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                                          Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
                                          Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                         sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst, QPrint)
+                                         sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
             if Nrch == 2:
                 Zxy1, Zxy2 = detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
                                                Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
                                                Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                               sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst, QPrint)
+                                               sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
 
     if FlagViewSignal == 1:
         # Трехмерное РЛИ-1
