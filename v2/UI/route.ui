@@ -99,7 +99,7 @@ padding: 4px;
      <x>-30</x>
      <y>-10</y>
      <width>1471</width>
-     <height>61</height>
+     <height>56</height>
     </rect>
    </property>
    <property name="maximumSize">
@@ -109,7 +109,7 @@ padding: 4px;
     </size>
    </property>
    <property name="styleSheet">
-    <string notr="true">background: #5e96fc;
+    <string notr="true">background: #7AD1DD;
 color: white;</string>
    </property>
    <property name="frameShape">
@@ -135,6 +135,19 @@ color: white;</string>
     </property>
     <property name="text">
      <string>Построение радиолокационного изображения в маршрутном режиме</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>1320</x>
+      <y>20</y>
+      <width>121</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Bsuir 2023, Minsk</string>
     </property>
    </widget>
   </widget>

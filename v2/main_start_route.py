@@ -6,16 +6,15 @@ from PySide6.QtWidgets import (QApplication,
                                QDoubleSpinBox,
                                QSpinBox,
                                QLabel,
-QTextBrowser,
+                               QTextBrowser,
                                QRadioButton,
                                QFileDialog,
-                                QComboBox,
+                               QComboBox,
                                QMainWindow)
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QPixmap
 from v2.calc_rli import calc_rli
 from v2.getFilesPath import getFilesPath
-
 
 app = QApplication([])
 window = QMainWindow()
@@ -48,17 +47,18 @@ new_pixmap = QPixmap(new_image_path)
 label_image_Dn.setPixmap(new_pixmap)
 label_image_Dp.setPixmap(new_pixmap)
 
+
 @Slot()
 def QPrint(value):
     text = outPutLabel.toPlainText()
     outPutLabel.setText(f"{text}\n{value}")
+
 
 def button_start_clicked():
     # Default values
     # Ищем пути к файлам
     ConsortPath, ModelDatePath, Yts1Path, Yts2Path = getFilesPath(str(pathUi.text()))
     print(comboBox_Dp.currentIndex())
-
 
     returnedValues = {
         'Kss': int(ui.findChild(QSpinBox, "Kss").text()),
@@ -70,8 +70,8 @@ def button_start_clicked():
         'Tsint': float(ui.findChild(QDoubleSpinBox, "Tsint").text().replace(',', '.')),
         'tauRli': float(ui.findChild(QDoubleSpinBox, "tauRli").text().replace(',', '.')),
         'RegimRsa': 2,
-        'TypeWinDp': comboBox_Dp.currentIndex(),
-        'TypeWinDn': comboBox_Dn.currentIndex(),
+        'TypeWinDp': comboBox_Dp.currentIndex() + 1,
+        'TypeWinDn': comboBox_Dn.currentIndex() + 1,
         'isGPU': ui.findChild(QCheckBox, 'GPU').isChecked(),
         'FlagViewSignal': ui.findChild(QCheckBox, 'FlagViewSignal').isChecked(),
         'FlagWriteRli': ui.findChild(QCheckBox, 'FlagWriteRli').isChecked(),
@@ -86,6 +86,8 @@ def button_start_clicked():
 
 
 QPrint('Hello world!')
+
+
 def open_file():
     file_dialog = QFileDialog()
     file_path, _ = file_dialog.getOpenFileName(window, "Выберите файл")
@@ -102,26 +104,27 @@ def open_file():
                     break
                 ModelDateContent.append(float(line))
 
-        RowsAndCulCount = ui.findChild(QTextBrowser,'RowsAndCulCount')
+        RowsAndCulCount = ui.findChild(QTextBrowser, 'RowsAndCulCount')
         RowsAndCulCount.setText(f"Размер массива - {int(ModelDateContent[12])} x {int(ModelDateContent[13])}\n " \
                                 f"Тип: Int16\n" \
-                                f"Размер файла Yts1 - {(int(ModelDateContent[12])*int(ModelDateContent[13])*2*2)/1024/1024} Мб")
+                                f"Размер файла Yts1 - {(int(ModelDateContent[12]) * int(ModelDateContent[13]) * 2 * 2) / 1024 / 1024} Мб")
         fileNameLabel = ui.findChild(QLabel, 'File_name')
         fileNameLabel.setText(str(file_path).split("/")[-1])
         QPrint(f"Выбран файл: {file_path}")
 
+
 def changeWindowFuncDp(index):
     label_image = ui.findChild(QLabel, 'IMAGE2')
-    new_image_path = f"UI/media/{index-1}.png"
+    new_image_path = f"UI/media/{index - 1}.png"
     new_pixmap = QPixmap(new_image_path)
     label_image.setPixmap(new_pixmap)
+
 
 def changeWindowFuncDn(index):
     label_image = ui.findChild(QLabel, 'IMAGE1')
-    new_image_path = f"UI/media/{index-1}.png"
+    new_image_path = f"UI/media/{index - 1}.png"
     new_pixmap = QPixmap(new_image_path)
     label_image.setPixmap(new_pixmap)
-
 
 
 button_uploadFile.clicked.connect(open_file)
