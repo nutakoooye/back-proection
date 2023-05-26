@@ -32,7 +32,7 @@ def range_calculation(K, Q, Tr, x, y, z, Vx,
                 n1 = 0
             for n in range(n1, n2):  # добавляем отсчеты сигнала
                 t = t2 + (n + 1) / Fs - (2 * RT1[k, q] / c + T0)
-                a = Akcomp[k] * np.sinc(df * t) * np.exp(
+                a = Akcomp[k] * math.sinc(df * t) * np.exp(
                     4j * math.pi * RT1[k, q] / lamda + FiBT[k])
                 U01comp[n, q] += a  # *exp(j*pi*Fs/Ks*t);
     return U01comp
@@ -81,7 +81,7 @@ def range_calculation_2_chanels(K, Q, Tr, x, y, z, Vx,
                 n1 = 0  # минимальное значение m
             for n in range(n1, n2):  # добавляем отсчеты сигнала
                 t = t2 + (n + 1) / Fs - (RT1s[k, q] / c + T0)
-                U01comp[n, q] += Akcomp[k] * np.sinc(df * t) * np.exp(
+                U01comp[n, q] += Akcomp[k] * math.sinc(df * t) * np.exp(
                     1j * (2 * math.pi * RT1s[k, q] / lamda + FiBT[
                         k])) * np.exp(1j * math.pi * Fs / Ks * t)
 
@@ -95,7 +95,7 @@ def range_calculation_2_chanels(K, Q, Tr, x, y, z, Vx,
                 n1 = 0  # минимальное значение m
             for n in range(n1, n2):  # добавляем отсчеты сигнала
                 t = t2 + (n + 1) / Fs - (RT2s[k, q] / c + T0)
-                U02comp[n, q] = U02comp[n, q] + Akcomp[k] * np.sinc(
+                U02comp[n, q] = U02comp[n, q] + Akcomp[k] * math.sinc(
                     df * t) * np.exp(
                     1j * (2 * math.pi * RT2s[k, q] / lamda + FiBT[
                         k])) * np.exp(1j * math.pi * Fs / Ks * t)

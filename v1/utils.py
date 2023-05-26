@@ -1,6 +1,5 @@
 import time
 
-
 def time_of_function_compile(function):
     def wrapped(*args, **kwargs):
         start_time = time.time()

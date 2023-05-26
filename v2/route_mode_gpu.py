@@ -58,11 +58,11 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             # вектор координат земной точки в НГцСК
             # rzt=xyzZt(Tst+tt(k),fizt+fiztSh*tt(k),betazt+betaztSh*tt(k),Hzt)
             rzt = cuda.local.array((3, 1), dtype=np.float64)
-            rzt[0, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[i]) * np.cos(
+            rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[i]) * math.cos(
                 2 * np.pi / Tz * (Tst + tt[i]) + betazt + betaztSh * tt[i])
-            rzt[1, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[i]) * np.sin(
+            rzt[1, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[i]) * math.sin(
                 2 * np.pi / Tz * (Tst + tt[i]) + betazt + betaztSh * tt[i])
-            rzt[2, 0] = (Rz + Hzt) * np.sin(fizt + fiztSh * tt[i])
+            rzt[2, 0] = (Rz + Hzt) * math.sin(fizt + fiztSh * tt[i])
             # матрица преобразования из НГцСК в ССК
             M_ngsk_ssk = cuda.local.array((3, 3), dtype=np.float64)
             M_ngsk_ssk[0, 0] = (rShrsa[1] * rrsa[2, 0] - rShrsa[2] * rrsa[1, 0]) / Vrsa / (Rz + Hrsa)
@@ -83,9 +83,9 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             al = XYZ_rsa_ts[qq[i], 12] * dugConsort
             be = XYZ_rsa_ts[qq[i], 13] * dugConsort
             Msskask = cuda.local.array((3, 3), dtype=np.float64)
-            Msskask[0, 0], Msskask[0, 1], Msskask[0, 2] = np.cos(al) * np.cos(be), np.sin(al) * np.cos(be), np.sin(be)
-            Msskask[1, 0], Msskask[1, 1], Msskask[1, 2] = -np.sin(al), np.cos(al), 0
-            Msskask[2, 0], Msskask[2, 1], Msskask[2, 2] = -np.cos(al) * np.sin(be), -np.sin(al) * np.sin(be), np.cos(be)
+            Msskask[0, 0], Msskask[0, 1], Msskask[0, 2] = math.cos(al) * math.cos(be), math.sin(al) * math.cos(be), math.sin(be)
+            Msskask[1, 0], Msskask[1, 1], Msskask[1, 2] = -math.sin(al), math.cos(al), 0
+            Msskask[2, 0], Msskask[2, 1], Msskask[2, 2] = -math.cos(al) * math.sin(be), -math.sin(al) * math.sin(be), math.cos(be)
             # вектор координат точки земной поверхности в АСК
             rzt_ask = cuda.local.array((3, 1), dtype=np.float64)
             dot_matrix_cuda(Msskask, rzt_ssk, rzt_ask)
@@ -161,11 +161,11 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             rRch[1, 0] = XYZ_rsa_ts[qq[k], 7] * dxConsort
             rRch[2, 0] = XYZ_rsa_ts[qq[k], 8] * dxConsort
             # вычисление координат земной точки в НГцСК
-            rzt[0, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.cos(
+            rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.cos(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-            rzt[1, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.sin(
+            rzt[1, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.sin(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-            rzt[2, 0] = (Rz + Hzt) * np.sin(fizt + fiztSh * tt[k])
+            rzt[2, 0] = (Rz + Hzt) * math.sin(fizt + fiztSh * tt[k])
             RR[k] = math.sqrt((rrsa[0, 0] - rzt[0, 0]) ** 2 + (rrsa[1, 0] - rzt[1, 0]) ** 2 + (rrsa[2, 0] - rzt[2, 0]) ** 2) + \
                     math.sqrt((rRch[0, 0] - rzt[0, 0]) ** 2 + (rRch[1, 0] - rzt[1, 0]) ** 2 + (rRch[2, 0] - rzt[2, 0]) ** 2)
         # аппроксимация дальности полиномом третьей степени
@@ -273,11 +273,11 @@ def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
         # вектор координат земной точки в НГцСК
         # rzt=xyzZt(Tst+tt(k),fizt+fiztSh*tt(k),betazt+betaztSh*tt(k),Hzt)
         rzt = np.zeros((3, 1))
-        rzt[0, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[i]) * np.cos(
+        rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[i]) * math.cos(
             2 * np.pi / Tz * (Tst + tt[i]) + betazt + betaztSh * tt[i])
-        rzt[1, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[i]) * np.sin(
+        rzt[1, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[i]) * math.sin(
             2 * np.pi / Tz * (Tst + tt[i]) + betazt + betaztSh * tt[i])
-        rzt[2, 0] = (Rz + Hzt) * np.sin(fizt + fiztSh * tt[i])
+        rzt[2, 0] = (Rz + Hzt) * math.sin(fizt + fiztSh * tt[i])
         # матрица преобразования из НГцСК в ССК
         M_ngsk_ssk = np.zeros((3, 3))
         M_ngsk_ssk[0, 0] = (rShrsa[1] * rrsa[2, 0] - rShrsa[2] * rrsa[1, 0]) / Vrsa / (Rz + Hrsa)
@@ -295,9 +295,9 @@ def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
         al = XYZ_rsa_ts[qq[i], 12] * dugConsort
         be = XYZ_rsa_ts[qq[i], 13] * dugConsort
         Msskask = np.array([
-            [np.cos(al) * np.cos(be), np.sin(al) * np.cos(be), np.sin(be)],
-            [-np.sin(al), np.cos(al), 0],
-            [-np.cos(al) * np.sin(be), -np.sin(al) * np.sin(be), np.cos(be)]
+            [math.cos(al) * math.cos(be), math.sin(al) * math.cos(be), math.sin(be)],
+            [-math.sin(al), math.cos(al), 0],
+            [-math.cos(al) * math.sin(be), -math.sin(al) * math.sin(be), math.cos(be)]
         ])
         # вектор координат точки земной поверхности в АСК
         rzt_ask = Msskask.dot(rzt_ssk)
@@ -376,11 +376,11 @@ def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
                 rRch = np.array(
                     [[XYZ_rsa_ts[qq[k], 9]], [XYZ_rsa_ts[qq[k], 10]], [XYZ_rsa_ts[qq[k], 11]]]) * dxConsort
                 # вычисление координат земной точки в НГцСК
-            rzt[0, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.cos(
+            rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.cos(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-            rzt[1, 0] = (Rz + Hzt) * np.cos(fizt + fiztSh * tt[k]) * np.sin(
+            rzt[1, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.sin(
                 2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-            rzt[2, 0] = (Rz + Hzt) * np.sin(fizt + fiztSh * tt[k])
+            rzt[2, 0] = (Rz + Hzt) * math.sin(fizt + fiztSh * tt[k])
             RR[k] = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch - rzt)
         # аппроксимация дальности полиномом третьей степени
         sumtt = np.sum(tt)
