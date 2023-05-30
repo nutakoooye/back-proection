@@ -322,7 +322,7 @@ def calc_rli(client_values, QPrint):
         ax = fig.add_subplot(111, projection='3d')
         X, Y = np.meshgrid(np.arange(Zxy1.shape[1]), np.arange(Zxy1.shape[0]))
         ax.plot_surface(X, Y, np.abs(Zxy1) ** StepBright, cmap='pink')
-        ax.view_init(10, 30)
+        ax.view_init(10, -60)
         ax.set_xlabel('Широта')
         ax.set_ylabel('Долгота')
         ax.set_title('Трехмерное РЛИ-1. NumRli=' + str(NumRli) + ', степень=' + str(StepBright))
@@ -333,9 +333,9 @@ def calc_rli(client_values, QPrint):
         Vrli0 = np.flipud(Vrli0)
 
         fig = plt.figure(figsize=(12.8, 9.6))
-        plt.imshow(Vrli0, cmap='pink')
-        plt.xlabel('Долгота')
-        plt.ylabel('Широта')
+        plt.imshow(Vrli0, cmap='gist_gray')
+        plt.xlabel('Широта')
+        plt.ylabel('Долгота')
         plt.title('Яркостное РЛИ-1. NumRli=' + str(NumRli) + ', степень=' + str(StepBright))
 
         if Nrch == 2:
@@ -343,7 +343,7 @@ def calc_rli(client_values, QPrint):
             fig = plt.figure(figsize=(12.8, 9.6))
             ax = fig.add_subplot(111, projection='3d')
             ax.plot_surface(X, Y, np.abs(Zxy2) ** StepBright, cmap='pink')
-            ax.view_init(10, 30)
+            ax.view_init(10, -60)
             ax.set_xlabel('Широта')
             ax.set_ylabel('Долгота')
             ax.set_title('Трехмерное РЛИ-2. NumRli=' + str(NumRli) + ', степень=' + str(StepBright))
@@ -354,9 +354,9 @@ def calc_rli(client_values, QPrint):
             Vrli0 = np.flipud(Vrli0)
 
             fig = plt.figure(figsize=(12.8, 9.6))
-            plt.imshow(Vrli0, cmap='pink')
-            plt.xlabel('Долгота')
-            plt.ylabel('Широта')
+            plt.imshow(Vrli0, cmap='gist_gray')
+            plt.xlabel('Широта')
+            plt.ylabel('Долгота')
             plt.title('Яркостное РЛИ-2. NumRli=' + str(NumRli) + ', степень=' + str(StepBright))
 
         plt.show()
