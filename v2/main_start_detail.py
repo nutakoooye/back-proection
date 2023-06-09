@@ -73,7 +73,7 @@ def button_start_clicked():
         'Nysint': int(ui.findChild(QSpinBox, "Nysint").text()),
         'Tsint': float(ui.findChild(QDoubleSpinBox, "Tsint").text().replace(',', '.')),
         'tauRli': float(ui.findChild(QDoubleSpinBox, "tauRli").text().replace(',', '.')),
-        'RegimRsa': 2,
+        'RegimRsa': 1,
         'TypeWinDp': TypeWinDp,
         'TypeWinDn': TypeWinDn,
         'isGPU': ui.findChild(QCheckBox, 'GPU').isChecked(),
