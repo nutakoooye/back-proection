@@ -1,3 +1,4 @@
+# импорт фукций для взаимодействия с интерфесом, созданном в Qt Cretor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (QApplication,
                                QPushButton,
@@ -20,9 +21,10 @@ app = QApplication([])
 window = QMainWindow()
 ui_file = "UI/detail.ui"
 loader = QUiLoader()
+# загрузка интерфейса из файла и запись его в переменную ui
 ui = loader.load(ui_file)
 
-# Селекторы
+# Селекторы ( получение элементов интерфейса и запись их в переменную)
 button_start = ui.findChild(QPushButton, "Start")
 button_uploadFile = ui.findChild(QPushButton, "upload")
 
@@ -39,13 +41,14 @@ comboBox_Dn = ui.findChild(QComboBox, 'comboBox_Dn')
 
 outPutLabel = ui.findChild(QTextBrowser, 'Output')
 
-
+# установка картинки весовой функции по умолчанию,
+# чтобы при запуске интерфейса не было пустого окна
 @Slot()
 def QPrint(value):
     text = outPutLabel.toPlainText()
     outPutLabel.setText(f"{text}\n{value}")
 
-
+# функция для начало расчета
 def button_start_clicked():
     # Default values
     TypeWinDn = 1
@@ -64,6 +67,10 @@ def button_start_clicked():
     # Ищем пути к файлам
     ConsortPath, ModelDatePath, Yts1Path, Yts2Path = getFilesPath(str(pathUi.text()))
 
+    # функция получает значения с интерфейса и вызывает функцию основного расчета с
+    # заданными параметрами, преведенными к необходимому типу, так как значения с полей приходит
+    # строкой (Qt поддерживает только запятую в полях с типом double, поэтому
+    # меняем меняем её на точку )
     returnedValues = {
         'Kss': int(ui.findChild(QSpinBox, "Kss").text()),
         'dxsint': float(ui.findChild(QDoubleSpinBox, "dxsint").text().replace(',', '.')),
@@ -91,7 +98,7 @@ def button_start_clicked():
 
 QPrint('Hello world!')
 
-
+# функция для загрузки файлов
 def open_file():
     file_dialog = QFileDialog()
     file_path, _ = file_dialog.getOpenFileName(window, "Выберите файл")
@@ -109,6 +116,8 @@ def open_file():
                 ModelDateContent.append(float(line))
         ModelDateLabel = ui.findChild(QTextBrowser, 'textBrowserModalDate')
         RowsAndCulCount = ui.findChild(QTextBrowser, 'RowsAndCulCount')
+
+        # формирование текста, который будет выведен в окно. Этот текст показывает что лежит в файле
         formData = f"высота орбиты РСА = {format(ModelDateContent[0])}\n" \
                    f"длина волны = {format(ModelDateContent[1])}\n" \
                    f"ширина главного лепестка ДН по азимуту = {format(ModelDateContent[2])}\n" \
@@ -139,9 +148,11 @@ def open_file():
         fileNameLabel.setText(str(file_path).split("/")[-1])
         QPrint(f"Выбран файл: {file_path}")
 
-
+# назначение обработчика на элемент
+# Например, назначаем на кнопку button_start вызов функции button_start_clicked по клику
 button_uploadFile.clicked.connect(open_file)
 button_start.clicked.connect(button_start_clicked)
 
+# отображение интерфейса в отдельным окном
 ui.show()
 app.exec()

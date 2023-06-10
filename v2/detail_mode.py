@@ -3,7 +3,7 @@ import numba as nb
 import math
 
 
-@nb.jit(nopython=True)
+#@nb.jit(nopython=True)
 def detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                       Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
                       Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,

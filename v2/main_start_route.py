@@ -1,3 +1,4 @@
+# импорт фукций для взаимодействия с интерфесом, созданном в Qt Cretor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (QApplication,
                                QPushButton,
@@ -20,9 +21,10 @@ app = QApplication([])
 window = QMainWindow()
 ui_file = "UI/route.ui"
 loader = QUiLoader()
+# загрузка интерфейса из файла и запись его в переменную ui
 ui = loader.load(ui_file)
 
-# Селекторы
+# Селекторы ( получение элементов интерфейса и запись их в переменную)
 button_start = ui.findChild(QPushButton, "Start")
 button_uploadFile = ui.findChild(QPushButton, "upload")
 
@@ -42,24 +44,30 @@ label_image_Dp = ui.findChild(QLabel, 'IMAGE2')
 
 outPutLabel = ui.findChild(QTextBrowser, 'Output')
 
-new_image_path = "UI/media/1.png"
+# установка картинки весовой функции по умолчанию,
+# чтобы при запуске интерфейса не было пустого окна
+new_image_path = "UI/media/0.png"
 new_pixmap = QPixmap(new_image_path)
 label_image_Dn.setPixmap(new_pixmap)
 label_image_Dp.setPixmap(new_pixmap)
 
-
+# Функция Slot - функция, которая будет выхывать с помошью интерфейса
+# (Все соданные функции в этом файлу вызываются на интрефесе)
 @Slot()
 def QPrint(value):
     text = outPutLabel.toPlainText()
     outPutLabel.setText(f"{text}\n{value}")
 
-
+# функция для начало расчета
 def button_start_clicked():
     # Default values
     # Ищем пути к файлам
     ConsortPath, ModelDatePath, Yts1Path, Yts2Path = getFilesPath(str(pathUi.text()))
     print(comboBox_Dp.currentIndex())
-
+    # функция получает значения с интерфейса и вызывает функцию основного расчета с
+    # заданными параметрами, преведенными к необходимому типу, так как значения с полей приходит
+    # строкой (Qt поддерживает только запятую в полях с типом double, поэтому
+    # меняем меняем её на точку )
     returnedValues = {
         'Kss': int(ui.findChild(QSpinBox, "Kss").text()),
         'dxsint': float(ui.findChild(QDoubleSpinBox, "dxsint").text().replace(',', '.')),
@@ -87,7 +95,7 @@ def button_start_clicked():
 
 QPrint('Hello world!')
 
-
+# функция для загрузки файлов
 def open_file():
     file_dialog = QFileDialog()
     file_path, _ = file_dialog.getOpenFileName(window, "Выберите файл")
@@ -112,21 +120,22 @@ def open_file():
         fileNameLabel.setText(str(file_path).split("/")[-1])
         QPrint(f"Выбран файл: {file_path}")
 
-
+# функция для смены картинки весовой функции
 def changeWindowFuncDp(index):
     label_image = ui.findChild(QLabel, 'IMAGE2')
-    new_image_path = f"UI/media/{index - 1}.png"
+    new_image_path = f"UI/media/{index}.png"
     new_pixmap = QPixmap(new_image_path)
     label_image.setPixmap(new_pixmap)
 
-
+# функция для смены картинки весовой функции
 def changeWindowFuncDn(index):
     label_image = ui.findChild(QLabel, 'IMAGE1')
-    new_image_path = f"UI/media/{index - 1}.png"
+    new_image_path = f"UI/media/{index}.png"
     new_pixmap = QPixmap(new_image_path)
     label_image.setPixmap(new_pixmap)
 
-
+# назначение обработчика на элемент
+# Например, назначаем на кнопку button_start вызов функции button_start_clicked по клику
 button_uploadFile.clicked.connect(open_file)
 
 comboBox_Dp.currentIndexChanged.connect(changeWindowFuncDp)
@@ -134,5 +143,6 @@ comboBox_Dn.currentIndexChanged.connect(changeWindowFuncDn)
 
 button_start.clicked.connect(button_start_clicked)
 
+# отображение интерфейса в отдельным окном
 ui.show()
 app.exec()
