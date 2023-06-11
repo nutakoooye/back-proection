@@ -1,8 +1,7 @@
 from numba import cuda
-import numba as nb
 import numpy as np
 import math
-from utils import time_of_function
+from v2.utils import time_of_function
 
 
 @cuda.jit

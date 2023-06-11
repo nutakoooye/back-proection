@@ -1,8 +1,5 @@
 import numba as nb
 import numpy as np
-import math
-
-from utils import time_of_function
 
 
 # @time_of_function

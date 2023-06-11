@@ -2,7 +2,7 @@ import math
 import numpy as np
 from numba import cuda
 
-from v1.utils import time_of_function
+from v2.utils import time_of_function
 from v2.jit_functions import inverse_matrix_cuda3, dot_matrix_cuda, flip_and_transpose_cuda, inverse_matrix_cuda4
 
 

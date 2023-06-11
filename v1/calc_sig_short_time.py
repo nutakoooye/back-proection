@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import numba as nb
-from utils import time_of_function
 
 
 # @time_of_function
