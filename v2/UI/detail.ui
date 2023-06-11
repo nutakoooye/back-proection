@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Widget</class>
- <widget class="QWidget" name="Widget">
+ <class>DetailMode</class>
+ <widget class="QWidget" name="DetailMode">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -26,7 +26,7 @@
    <string>Widget</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#Widget{
+   <string notr="true">#DetailMode{
 background: #5C5F66;
 }
 *{
@@ -275,11 +275,11 @@ font-weight: 700;
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_8">
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Степень яркостного изображения: </string>
+          <string>Дискретность по широте, м: </string>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -287,7 +287,7 @@ font-weight: 700;
         </widget>
        </item>
        <item>
-        <widget class="QDoubleSpinBox" name="StepBright">
+        <widget class="QDoubleSpinBox" name="dysint">
          <property name="value">
           <double>1.000000000000000</double>
          </property>
@@ -344,25 +344,14 @@ font-weight: 700;
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_7">
-       <item>
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Дискретность по широте, м: </string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="dysint">
-         <property name="value">
-          <double>1.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QCheckBox" name="checkBox">
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
+       <property name="text">
+        <string>Однопроходная интерферометрия</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -612,17 +601,10 @@ font-weight: 700;
       <x>20</x>
       <y>10</y>
       <width>361</width>
-      <height>211</height>
+      <height>221</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_4">
-     <item>
-      <widget class="QCheckBox" name="checkBox">
-       <property name="text">
-        <string>Однопроходная интерферометрия</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QCheckBox" name="FlagViewSignal">
        <property name="text">
@@ -669,8 +651,32 @@ font-weight: 700;
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="Tsint">
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
          <property name="value">
           <double>0.400000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>Степень яркостного изображения: </string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="StepBright">
+         <property name="value">
+          <double>1.000000000000000</double>
          </property>
         </widget>
        </item>
