@@ -189,36 +189,36 @@ def calc_rli(client_values, QPrint):
 
     del Gh0ss
     # отображение сигналов до после ВПО при установленном флаге отображения
-    if FlagViewSignal == 1:  # 13 секунд !!!
-        # График 1
-        fig1 = plt.figure()
-        n = np.arange(1, N * Kss + 1)
-        plt.plot(n, np.abs(Uout01ss[n - 1, 0]), n, np.abs(Uout01ss[n - 1, Q // 2]), n, np.abs(Uout01ss[n - 1, Q - 1]),
-                 linewidth=0.5)
-        plt.grid(True)
-        plt.title('Сигналы после ВПО')
-
-        # График 2
-        fig2 = plt.figure()
-
-        Vrli0 = (np.abs(Y01.T) ** StepBright)
-        Vrli0 = Vrli0 / np.max(np.max(Vrli0))
-        Vrli0 = np.flipud(Vrli0)
-
-        plt.subplot(2, 1, 1)
-        plt.imshow(Vrli0)
-        plt.xlabel('Наклонная дальность')
-        plt.ylabel('Период повторения')
-        plt.title('Сигналы на входе ВПО')
-        Vrli0 = (np.abs(Uout01ss.T) ** StepBright)
-        Vrli0 = Vrli0 / np.max(np.max(Vrli0))
-        Vrli0 = np.flipud(Vrli0)
-
-        plt.subplot(2, 1, 2)
-        plt.imshow(Vrli0)
-        plt.xlabel('Наклонная дальность')
-        plt.ylabel('Период повторения')
-        plt.title('Сигналы на выходе ВПО')
+    # if FlagViewSignal == 1:  # 13 секунд !!!
+    #     # График 1
+    #     fig1 = plt.figure()
+    #     n = np.arange(1, N * Kss + 1)
+    #     plt.plot(n, np.abs(Uout01ss[n - 1, 0]), n, np.abs(Uout01ss[n - 1, Q // 2]), n, np.abs(Uout01ss[n - 1, Q - 1]),
+    #              linewidth=0.5)
+    #     plt.grid(True)
+    #     plt.title('Сигналы после ВПО')
+    #
+    #     # График 2
+    #     fig2 = plt.figure()
+    #
+    #     Vrli0 = (np.abs(Y01.T) ** StepBright)
+    #     Vrli0 = Vrli0 / np.max(np.max(Vrli0))
+    #     Vrli0 = np.flipud(Vrli0)
+    #
+    #     plt.subplot(2, 1, 1)
+    #     plt.imshow(Vrli0)
+    #     plt.xlabel('Наклонная дальность')
+    #     plt.ylabel('Период повторения')
+    #     plt.title('Сигналы на входе ВПО')
+    #     Vrli0 = (np.abs(Uout01ss.T) ** StepBright)
+    #     Vrli0 = Vrli0 / np.max(np.max(Vrli0))
+    #     Vrli0 = np.flipud(Vrli0)
+    #
+    #     plt.subplot(2, 1, 2)
+    #     plt.imshow(Vrli0)
+    #     plt.xlabel('Наклонная дальность')
+    #     plt.ylabel('Период повторения')
+    #     plt.title('Сигналы на выходе ВПО')
 
     # ######## сжатие в координатах (широта/долгота) Backprojection  ###############
     # отсчеты накопленного комплексного РЛИ-1
@@ -269,27 +269,6 @@ def calc_rli(client_values, QPrint):
             print('Интервал синтезирования выходит за пределы траекторного сигнала')
             QPrint('Интервал синтезирования выходит за пределы траекторного сигнала')
 
-        # подготовительные операции для аппроксимации дальности
-        qq = np.empty(5, dtype=np.int32)
-        tt = np.empty(5)
-        Q_cons_0 = qst
-        qq[0] = Q_cons_0 - 1
-        tt[0] = 0
-        qq[1] = Q_cons_0 - 1 + int(Inabl / 4) - 1
-        tt[1] = Tnabl / 4
-        qq[2] = Q_cons_0 - 1 + int(Inabl / 2) - 1
-        tt[2] = Tnabl / 2
-        qq[3] = Q_cons_0 - 1 + int(3 * Inabl / 4) - 1
-        tt[3] = 3 * Tnabl / 4
-        qq[4] = Q_cons_0 - 1 + Inabl - 1
-        tt[4] = Tnabl
-        sumtt = np.sum(tt)
-        sumtt2 = np.sum(tt ** 2)
-        sumtt3 = np.sum(tt ** 3)
-        sumtt4 = np.sum(tt ** 4)
-        sumtt5 = np.sum(tt ** 5)
-        sumtt6 = np.sum(tt ** 6)
-
         # основной расчетный цикл ДЛЯ МАКСИМАЛЬНОГО РАСПАРАЛЛЕЛИВАНИЯ
         if GPUCalculationFlag:
             if Nrch == 1:
@@ -306,15 +285,13 @@ def calc_rli(client_values, QPrint):
                                                    sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
         else:
             if Nrch == 1:
-                Zxy1 = detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-                                         Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-                                         Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                         sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+                Zxy1 = detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0, Rz,
+                                         betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz,tauRli, speedOfL,
+                                         t_r_w, Kss, Fs, lamda, WinSampl, e, T0, q1, q2, Tst0)
             if Nrch == 2:
-                Zxy1, Zxy2 = detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
-                                               Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-                                               Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                                               sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst)
+                Zxy1, Zxy2 = detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint,
+                                               fizt0, Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, tauRli, speedOfL,
+                                               t_r_w, Kss, Fs, lamda, WinSampl, e, T0, q1, q2, Tst0)
 
     if FlagViewSignal == 1:
         # Трехмерное РЛИ-1
