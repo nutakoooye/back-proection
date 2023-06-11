@@ -3,11 +3,10 @@ import numba as nb
 import math
 
 
-#@nb.jit(nopython=True)
-def detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
-                      Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-                      Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                      sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst):
+@nb.jit(nopython=True)
+def detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0, Rz,
+                      betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, tauRli, speedOfL,
+                      t_r_w, Kss, Fs, lamda, WinSampl, e, T0, q1, q2, Tst0):
     for nx in range(Nxsint):
         for ny in range(Nysint):
             # координаты текущей точки наблюдения
@@ -18,72 +17,49 @@ def detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             fizt = fizt0 + yt / Rz
             betazt = betazt0 + xt / Rz / math.cos(fizt0)
             Hzt = zt
-            fiztSh = 0
-            betaztSh = 0
             # номер первого периода на интервале синтезирования
             qst = int(tauRli / Tr) + 1
-            # аппроксимируем суммарную дальность фазовый центр антенны на передачу -
-            # земная точка - фазовый центр приемного канала на интервале
-            # синтезирования полиномом третьей степени по пяти точкам
-            r_Rch_zt = np.zeros((1, Inabl))
+            # ОБНОВЛЕННАЯ ЧАСТЬ - прямой расчет дальностей для каждого периода
+            # повторения в большом цикле без аппроксимации дальностей
+            # получаем дальности в начале синтезирования
+            t1 = Tst0 + (qst - 1) * Tr
             rzt = np.zeros((3, 1))
-            RR = np.zeros(5)
-            for k in range(5):
-                # получение координат фазового центра передающей антенны в НГцСК
-                rrsa = np.array(
-                    [[XYZ_rsa_ts[qq[k], 0]], [XYZ_rsa_ts[qq[k], 1]], [XYZ_rsa_ts[qq[k], 2]]]) * dxConsort
-                # получение координат фазового центра приемного канала в НГцСК
-                rRch = np.array(
-                    [[XYZ_rsa_ts[qq[k], 6]], [XYZ_rsa_ts[qq[k], 7]], [XYZ_rsa_ts[qq[k], 8]]]) * dxConsort
-
-                # вычисление координат земной точки в НГцСК
-                rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.cos(
-                    2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-                rzt[1, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.sin(
-                    2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-                rzt[2, 0] = (Rz + Hzt) * math.sin(fizt + fiztSh * tt[k])
-                RR[k] = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch - rzt)
-            # аппроксимация дальности полиномом третьей степени
-            B0 = np.sum(RR)
-            B1 = np.sum(RR * tt)
-            B2 = np.sum(RR * (tt ** 2))
-            B3 = np.sum(RR * (tt ** 3))
-            A = np.array([[5, sumtt, sumtt2, sumtt3],
-                          [sumtt, sumtt2, sumtt3, sumtt4],
-                          [sumtt2, sumtt3, sumtt4, sumtt5],
-                          [sumtt3, sumtt4, sumtt5, sumtt6]])
-            B = np.array([[B0], [B1], [B2], [B3]])
-            pr = np.linalg.inv(A).dot(B)
-            pr1 = np.flip(pr.T)
-            # вычисляем все дальности на интервале наблюдения
-            for i in range(Inabl):
-                t1 = i * Tr
-                b = np.array([[t1 ** 3], [t1 ** 2], [t1], [1.0]])
-                r_Rch_zt[0, i] = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + \
-                                 pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
-
-            # дальность на траверсе
-            d0 = r_Rch_zt[0, 0]
-            # ar=Vrsa^2/d0  # радиальное ускорение для компенсации МД и МЧ
+            # вычисление координат земной точки в НГцСК на момент t1
+            rzt[0, 0] = (Rz + Hzt) * math.cos(fizt) * math.cos(2 * np.pi / Tz * t1 + betazt)
+            rzt[1, 0] = (Rz + Hzt) * math.cos(fizt) * math.sin(2 * np.pi / Tz * t1 + betazt)
+            rzt[2, 0] = (Rz + Hzt) * math.sin(fizt)
+            # дальность между фазовым центром АР на передачу и точкой
+            rrsa = np.array([[XYZ_rsa_ts[qst, 0]], [XYZ_rsa_ts[qst, 1]], [XYZ_rsa_ts[qst, 2]]]) * dxConsort
+            # дальность между фазовым центрами приемных каналов и точкой
+            rRch1 = np.array([[XYZ_rsa_ts[qst, 6]], [XYZ_rsa_ts[qst, 7]], [XYZ_rsa_ts[qst, 8]]]) * dxConsort
+            # дальность в момент начала синтезирования для первого канала
+            d01 = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch1 - rzt)
             # нескомпенсированные скорости для приемных каналов
-            Vr1 = (Lrch / 2) / d0 * Vrsa
-            Vr2 = (-Lrch / 2) / d0 * Vrsa
+            # Vr1=(Lrch/2)/d0*Vrsa; Vr2=(-Lrch/2)/d0*Vrsa; % ????
             # непосредственно суммирование - КН с компенсацией МД и МЧ
             sum1 = 0
-            sum2 = 0
-            # дальность в момент начала синтезирования для первого канала
-            d1 = r_Rch_zt[0, 0]
             for q in range(q1 - 1, q2):
-                d = r_Rch_zt[0, q - q1 + 1]
+                # ОБНОВЛЕННАЯ ЧАСТЬ - прямой расчет суммарной дальности
+                t1 = Tst0 + (q - 1) * Tr
+                # вычисление координат земной точки в НГцСК на момент t1
+                rzt = np.zeros((3, 1))
+                rzt[0, 0] = (Rz + Hzt) * math.cos(fizt) * math.cos(2 * np.pi / Tz * t1 + betazt)
+                rzt[1, 0] = (Rz + Hzt) * math.cos(fizt) * math.sin(2 * np.pi / Tz * t1 + betazt)
+                rzt[2, 0] = (Rz + Hzt) * math.sin(fizt)
+                # дальность между фазовым центром АР на передачу и точкой
+                rrsa = np.array([[XYZ_rsa_ts[q, 0]], [XYZ_rsa_ts[q, 1]], [XYZ_rsa_ts[q, 2]]]) * dxConsort
+                # дальность между фазовым центром 1-го приемного канала и точкой
+                rRch1 = np.array([[XYZ_rsa_ts[q, 6]], [XYZ_rsa_ts[q, 7]], [XYZ_rsa_ts[q, 8]]]) * dxConsort
+                # текущая дальность до первого канала
+                dq1 = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch1 - rzt)
                 # дробный номер отсчета по быстрому времени
-                ndr = (d / speedOfL - t_r_w + T0) * Kss * Fs - 1
+                ndr = (dq1 / speedOfL - t_r_w + T0) * Kss * Fs - 1
                 n = int(ndr)
                 drob = ndr % 1
                 ut = Uout01ss[n, q] * (1 - drob) + Uout01ss[n + 1, q] * drob
-                fiq = 2 * math.pi / lamda * (r_Rch_zt[0, q - q1 + 1] - q1)
+                fiq = 2 * math.pi / lamda * (dq1 - d01)
                 # суммируем с учетом сдвига РЛИ по скорости
-                sum1 = sum1 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq) * e ** (
-                        1j * 2 * np.pi * Vr1 / lamda * (q - q1 + 1) * Tr)
+                sum1 = sum1 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq)
 
             Zxy1[nx, ny] = sum1
 
@@ -92,10 +68,9 @@ def detail_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
 
 
 @nb.jit(nopython=True)
-def detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint, fizt0,
-                      Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, Vrsa, tauRli, Inabl, qq, tt,
-                      Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0,
-                      sumtt, sumtt2, sumtt3, sumtt4, sumtt5, sumtt6, q1, q2, Tst):
+def detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dysint,
+                      fizt0, Rz, betazt0, Tr, XYZ_rsa_ts, dxConsort, Tz, tauRli, speedOfL,
+                      t_r_w, Kss, Fs, lamda, WinSampl, e, T0, q1, q2, Tst0):
     for nx in range(Nxsint):
         for ny in range(Nysint):
             # координаты текущей точки наблюдения
@@ -106,81 +81,62 @@ def detail_big_cycle2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
             fizt = fizt0 + yt / Rz
             betazt = betazt0 + xt / Rz / math.cos(fizt0)
             Hzt = zt
-            fiztSh = 0
-            betaztSh = 0
             # номер первого периода на интервале синтезирования
             qst = int(tauRli / Tr) + 1
-            # аппроксимируем суммарную дальность фазовый центр антенны на передачу -
-            # земная точка - фазовый центр приемного канала на интервале
-            # синтезирования полиномом третьей степени по пяти точкам
-            r_Rch_zt = np.zeros((2, Inabl))
+            # ОБНОВЛЕННАЯ ЧАСТЬ - прямой расчет дальностей для каждого периода
+            # повторения в большом цикле без аппроксимации дальностей
+            # получаем дальности в начале синтезирования
+            t1 = Tst0 + (qst - 1) * Tr
             rzt = np.zeros((3, 1))
-            RR = np.zeros(5)
-            for irch in range(1, 3):
-                for k in range(5):
-                    # получение координат фазового центра передающей антенны в НГцСК
-                    rrsa = np.array(
-                        [[XYZ_rsa_ts[qq[k], 0]], [XYZ_rsa_ts[qq[k], 1]], [XYZ_rsa_ts[qq[k], 2]]]) * dxConsort
-                    # получение координат фазового центра приемного канала в НГцСК
-                    if irch == 1:
-                        rRch = np.array(
-                            [[XYZ_rsa_ts[qq[k], 6]], [XYZ_rsa_ts[qq[k], 7]], [XYZ_rsa_ts[qq[k], 8]]]) * dxConsort
-                    if irch == 2:
-                        rRch = np.array(
-                            [[XYZ_rsa_ts[qq[k], 9]], [XYZ_rsa_ts[qq[k], 10]], [XYZ_rsa_ts[qq[k], 11]]]) * dxConsort
-                        # вычисление координат земной точки в НГцСК
-                    rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.cos(
-                        2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-                    rzt[1, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[k]) * math.sin(
-                        2 * np.pi / Tz * (Tst + tt[k]) + betazt + betaztSh * tt[k])
-                    rzt[2, 0] = (Rz + Hzt) * math.sin(fizt + fiztSh * tt[k])
-                    RR[k] = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch - rzt)
-                # аппроксимация дальности полиномом третьей степени
-                B0 = np.sum(RR)
-                B1 = np.sum(RR * tt)
-                B2 = np.sum(RR * (tt ** 2))
-                B3 = np.sum(RR * (tt ** 3))
-                A = np.array([[5, sumtt, sumtt2, sumtt3],
-                              [sumtt, sumtt2, sumtt3, sumtt4],
-                              [sumtt2, sumtt3, sumtt4, sumtt5],
-                              [sumtt3, sumtt4, sumtt5, sumtt6]])
-                B = np.array([[B0], [B1], [B2], [B3]])
-                pr = np.linalg.inv(A).dot(B)
-                pr1 = np.flip(pr.T)
-                # вычисляем все дальности на интервале наблюдения
-                for i in range(Inabl):
-                    t1 = i * Tr
-                    b = np.array([[t1 ** 3], [t1 ** 2], [t1], [1.0]])
-                    r_Rch_zt[irch - 1, i] = pr1[0, 0] * b[0, 0] + pr1[0, 1] * b[1, 0] + \
-                                            pr1[0, 2] * b[2, 0] + pr1[0, 3] * b[3, 0]
-
-            # дальность на траверсе
-            d0 = r_Rch_zt[0, 0]
-            # ar=Vrsa^2/d0  # радиальное ускорение для компенсации МД и МЧ
+            # вычисление координат земной точки в НГцСК на момент t1
+            rzt[0, 0] = (Rz + Hzt) * math.cos(fizt) * math.cos(2 * np.pi / Tz * t1 + betazt)
+            rzt[1, 0] = (Rz + Hzt) * math.cos(fizt) * math.sin(2 * np.pi / Tz * t1 + betazt)
+            rzt[2, 0] = (Rz + Hzt) * math.sin(fizt)
+            # дальность между фазовым центром АР на передачу и точкой
+            rrsa = np.array([[XYZ_rsa_ts[qst, 0]], [XYZ_rsa_ts[qst, 1]], [XYZ_rsa_ts[qst, 2]]]) * dxConsort
+            # дальность между фазовым центрами приемных каналов и точкой
+            rRch1 = np.array([[XYZ_rsa_ts[qst, 6]], [XYZ_rsa_ts[qst, 7]], [XYZ_rsa_ts[qst, 8]]]) * dxConsort
+            rRch2 = np.array([[XYZ_rsa_ts[qst, 9]], [XYZ_rsa_ts[qst, 10]], [XYZ_rsa_ts[qst, 11]]]) * dxConsort
+            # дальность в момент начала синтезирования для первого канала
+            d01 = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch1 - rzt)
+            # дальность в момент начала синтезирования для второго канала
+            d02 = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch2 - rzt)
             # нескомпенсированные скорости для приемных каналов
-            Vr1 = (Lrch / 2) / d0 * Vrsa
-            Vr2 = (-Lrch / 2) / d0 * Vrsa
+            # Vr1=(Lrch/2)/d0*Vrsa; Vr2=(-Lrch/2)/d0*Vrsa; % ????
             # непосредственно суммирование - КН с компенсацией МД и МЧ
             sum1 = 0
             sum2 = 0
-            # дальность в момент начала синтезирования для первого канала
-            d1 = r_Rch_zt[0, 0]
             for q in range(q1 - 1, q2):
-                d = r_Rch_zt[0, q - q1 + 1]
+                # ОБНОВЛЕННАЯ ЧАСТЬ - прямой расчет суммарной дальности
+                t1 = Tst0 + (q - 1) * Tr
+                # вычисление координат земной точки в НГцСК на момент t1
+                rzt = np.zeros((3, 1))
+                rzt[0, 0] = (Rz + Hzt) * math.cos(fizt) * math.cos(2 * np.pi / Tz * t1 + betazt)
+                rzt[1, 0] = (Rz + Hzt) * math.cos(fizt) * math.sin(2 * np.pi / Tz * t1 + betazt)
+                rzt[2, 0] = (Rz + Hzt) * math.sin(fizt)
+                # дальность между фазовым центром АР на передачу и точкой
+                rrsa = np.array([[XYZ_rsa_ts[q, 0]], [XYZ_rsa_ts[q, 1]], [XYZ_rsa_ts[q, 2]]]) * dxConsort
+                # дальность между фазовым центром 1-го приемного канала и точкой
+                rRch1 = np.array([[XYZ_rsa_ts[q, 6]], [XYZ_rsa_ts[q, 7]], [XYZ_rsa_ts[q, 8]]]) * dxConsort
+                rRch2 = np.array([[XYZ_rsa_ts[q, 9]], [XYZ_rsa_ts[q, 10]], [XYZ_rsa_ts[q, 11]]]) * dxConsort
+                # текущая дальность до первого канала
+                dq1 = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch1 - rzt)
+                dq2 = np.linalg.norm(rrsa - rzt) + np.linalg.norm(rRch2 - rzt)
                 # дробный номер отсчета по быстрому времени
-                ndr = (d / speedOfL - t_r_w + T0) * Kss * Fs - 1
+                ndr = (dq1 / speedOfL - t_r_w + T0) * Kss * Fs - 1
                 n = int(ndr)
                 drob = ndr % 1
                 ut = Uout01ss[n, q] * (1 - drob) + Uout01ss[n + 1, q] * drob
-                fiq = 2 * math.pi / lamda * (r_Rch_zt[0, q - q1 + 1] - q1)
+                fiq = 2 * math.pi / lamda * (dq1 - d01)
                 # суммируем с учетом сдвига РЛИ по скорости
-                sum1 = sum1 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq) * e ** (
-                        1j * 2 * np.pi * Vr1 / lamda * (q - q1 + 1) * Tr)
-
+                sum1 = sum1 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq)
+                ndr = (dq2 / speedOfL - t_r_w + T0) * Kss * Fs - 1
+                n = int(ndr)
+                drob = ndr % 1
                 ut = Uout02ss[n, q] * (1 - drob) + Uout02ss[n + 1, q] * drob
-                fiq = 2 * np.pi / lamda * (r_Rch_zt[1, q - q1 + 1] - q1)
-                sum2 = sum2 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq) * e ** (
-                        1j * 2 * np.pi * Vr2 / lamda * (q - q1 + 1) * Tr)
+                fiq = 2 * math.pi / lamda * (dq2 - d02)
+                # суммируем с учетом сдвига РЛИ по скорости
+                sum2 = sum2 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq)
 
             Zxy1[nx, ny] = sum1
             Zxy2[nx, ny] = sum2
