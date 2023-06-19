@@ -2,7 +2,7 @@ from numba import cuda
 import numpy as np
 
 
-@cuda.jit(device=True)
+@cuda.jit(device=True) # вспомогательные ф-ии должны быть с таким декоратором
 def dot_matrix_cuda(A, B, result):
     for t in range(result.shape[0]):
         result[t, 0] = 0.

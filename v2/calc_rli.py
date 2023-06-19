@@ -156,14 +156,13 @@ def calc_rli(client_values, QPrint):
 
     # передискретизация по наклонной дальности - дополнение спектра нулями
     # новый вариант передискретизации - просто добавляем нули
-
     @time_of_function
-    def oversampling(N, Q, Kss, Y0X, Gh0ss):
+    def oversampling(N, Q, Kss, Y0X, Gh0ss): # в отдельной функции для удобства
         Y01ss = np.empty((Kss * N, Q), np.complex64)
         Y01ss[:N, :Q] = Y0X[:N, :Q]
 
         # сжатие по дальности
-        Goutss = Y01ss * Gh0ss[:, np.newaxis]  # Векторизованная операция
+        Goutss = Y01ss * Gh0ss[:, np.newaxis]  # Векторизованная операция numpy для ускорения
 
         return Goutss
         # 4 секунды копирование и перемножение матриц 16 - обратное БПФ
@@ -171,6 +170,7 @@ def calc_rli(client_values, QPrint):
     np.fft.ifft = time_of_function(np.fft.ifft)
 
     Goutss = oversampling(N, Q, Kss, Y01, Gh0ss)
+    # вычисляем обратное БПФ после передискретизации на видеокарте если включен флаг
     if GPUCalculationFlag:
         from v2.cupy_functions import cuifft
         Uout01ss = cuifft(Goutss) * np.sqrt(N * Kss)
@@ -181,7 +181,6 @@ def calc_rli(client_values, QPrint):
         # новый вариант передискретизации - просто добавляем нули
         Goutss = oversampling(N, Q, Kss, Y02, Gh0ss)
         if GPUCalculationFlag:
-            from v2.cupy_functions import cuifft
             Uout02ss = cuifft(Goutss) * np.sqrt(N * Kss)
         else:
             Uout02ss = np.fft.ifft(Goutss, axis=0).astype(np.complex64) * np.sqrt(N * Kss)
@@ -232,7 +231,7 @@ def calc_rli(client_values, QPrint):
 
     if RegimRsa == 2:  # маршрутный режим
         # основной расчетный цикл ДЛЯ МАКСИМАЛЬНОГО РАСПАРАЛЛЕЛИВАНИЯ
-        if GPUCalculationFlag:
+        if GPUCalculationFlag: # если включен флаг считаем на ГП
             if Nrch == 1:
                 Zxy1 = gpu_route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                                             Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,

@@ -10,7 +10,11 @@ from v2.jit_functions import inverse_matrix_cuda3, dot_matrix_cuda, flip_and_tra
 def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                       Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
                       Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
+    # в функции обертке мы задали сколько потоков на сетку нам нужно (>= количества пиксеелей)
+    # cuda.grid(2) говорит в каком именно потоке запущен определенный экземпляр функции
+    # т.е вернет например (0,0), значит в этом потоке расчитываем пиксель с этой координатой
     nx, ny = cuda.grid(2)
+    # потоков может быть чуть больше чем пикселей, проверяем не выходим ли за рамки
     if nx < Zxy1.shape[0] and ny < Zxy1.shape[1]:
         # координаты текущей точки наблюдения
         xt = (-(Nxsint - 1) / 2 + nx) * dxsint
@@ -30,7 +34,8 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         Q_cons_0 = 1
 
         # аппрокимация закона изменения азимута
-        # Calc_R_az_route
+
+        # создаем временные массивы в локальной памяти конкретного потока
         qq = cuda.local.array(5, dtype=np.int32)
         tt = cuda.local.array(5, dtype=np.float64)
         qq[0] = Q_cons_0 - 1
@@ -56,7 +61,6 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             rShrsa[1] = XYZ_rsa_ts[qq[i], 4] * dVxConsort
             rShrsa[2] = XYZ_rsa_ts[qq[i], 5] * dVxConsort
             # вектор координат земной точки в НГцСК
-            # rzt=xyzZt(Tst+tt(k),fizt+fiztSh*tt(k),betazt+betaztSh*tt(k),Hzt)
             rzt = cuda.local.array((3, 1), dtype=np.float64)
             rzt[0, 0] = (Rz + Hzt) * math.cos(fizt + fiztSh * tt[i]) * math.cos(
                 2 * np.pi / Tz * (Tst + tt[i]) + betazt + betaztSh * tt[i])
@@ -88,6 +92,8 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             Msskask[2, 0], Msskask[2, 1], Msskask[2, 2] = -math.cos(al) * math.sin(be), -math.sin(al) * math.sin(be), math.cos(be)
             # вектор координат точки земной поверхности в АСК
             rzt_ask = cuda.local.array((3, 1), dtype=np.float64)
+            # самописная ф-ия для перемножения матриц, т.к. нужно создать новую матрицу https://numba.readthedocs.io/en/stable/cuda/cudapysupported.html#numpy-support
+            # первые два параметра - входные матрицы, третий - выходняая
             dot_matrix_cuda(Msskask, rzt_ssk, rzt_ask)
             # азимут земной точки относительно нормали к антенной системе
             RRaz[i] = math.atan(rzt_ask[1, 0] / rzt_ask[2, 0])
@@ -108,11 +114,11 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         B = cuda.local.array((3, 1), dtype=np.float64)
         B[0, 0], B[1, 0], B[2, 0] = B0, B1, B2
         A_inv = cuda.local.array((3, 3), dtype=np.float64)
-        inverse_matrix_cuda3(A, A_inv)
+        inverse_matrix_cuda3(A, A_inv) # тоже самописная тк создается новая матрица
         pazd = cuda.local.array((3, 1), dtype=np.float64)
-        dot_matrix_cuda(A_inv, B, pazd)
+        dot_matrix_cuda(A_inv, B, pazd) # тоже самописная тк создается новая матрица
         paz = cuda.local.array((1, 3), dtype=np.float64)
-        flip_and_transpose_cuda(pazd, paz)
+        flip_and_transpose_cuda(pazd, paz) # тоже самописная тк создается новая матрица
         # определяем время прохождения траверса и интервал индексов отсчетов
         # для суммирования отсчетов
         aa = paz[0, 0]
@@ -224,7 +230,7 @@ def kernel_2d_array_1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
             # суммируем с учетом сдвига РЛИ по скорости
             sum1 = sum1 + ut * WinSampl[q - q1 + 1] * e ** (-1j * fiq) * e ** (
                     1j * 2 * np.pi * Vr1 / lamda * (q - q0 + 1) * Tr)
-
+        # возвращать ничего не нужно, записываем результат по номеру потока в котором рассчитывали
         Zxy1[nx, ny] = sum1
 
 
@@ -436,15 +442,22 @@ def kernel_2d_array_2(Zxy1, Zxy2, Nxsint, Nysint, Uout01ss, Uout02ss, dxsint, dy
     Zxy1[nx, ny] = sum1
     Zxy2[nx, ny] = sum2
 
-
+# функция обертка для задания параметров распараллеливания(количества потоков и блоков)
 @time_of_function
 def gpu_route_big_cycle1(Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
                          Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
                          Hrsa, dugConsort, Tsint, Lrch, speedOfL, t_r_w, Kss, Fs, lamda, WinSampl, e, T0):
+    # количество потоков на блок чаще всего выирается 16*16, но можно пробовать другое
     threads_per_block = (16, 16)
+    # количество блоков на сетку ( выбирается в зависимости от размера выходного изображения)
+    # нужно чтобы произведение threads_per_block и blocks_per_grid было >= размера изображения
     blocks_per_grid_x = math.ceil(Zxy1.shape[0] / threads_per_block[0])
     blocks_per_grid_y = math.ceil(Zxy1.shape[1] / threads_per_block[1])
     blocks_per_grid = (blocks_per_grid_x, blocks_per_grid_y)
+    ####  ВЫЗОВ ОСНОВНОГО РАСЧЕТНОГО ЯДРА ДЛЯ КАЖДОГО ПИКСЕЛЯ В КАЖДОМ ПОТОКЕ ####
+    # в квадратных скобках передаем параметры блоков на поток и потоков на блок, под капотом они
+    # перемножаются, это и есть наше разделение видеокарты на потоки
+    # в круглых - общие данные для всех потоков
     kernel_2d_array_1[blocks_per_grid, threads_per_block](
         Zxy1, Nxsint, Nysint, Uout01ss, dxsint, dysint, fizt0,
         Rz, betazt0, Tst0, Q, Tr, XYZ_rsa_ts, dxConsort, dVxConsort, Tz, Vrsa,
